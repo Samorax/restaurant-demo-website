@@ -22,5 +22,6 @@ namespace FoodloyaleApi.Models
 
         public string? CustomerID {get;set;}
         public string? Username { get; set; }
+
     }
 }

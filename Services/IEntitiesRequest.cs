@@ -17,10 +17,14 @@ namespace restaurant_demo_website.Services
 
         public Task<Order> AddOrderAsync(Order order);
         public Task UpdateOrderAsync(Order order);
+
+        public Task PostOrderToQueue(Order order);
         public Task<OrderDetail> AddOrderDetailsAsync(OrderDetail orderDetail);
 
         public Task<Customer> CreateCustomerAsync(CustomerTDO customer);
 
         public Task<Customer> CustomerSignInAsync(CustomerSignIn customer);
+
+        public Task<string> CreateSetupIntent(PaymentObject paymentObject);
     }
 }
