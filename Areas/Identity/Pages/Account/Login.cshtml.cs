@@ -26,12 +26,14 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
         
         private readonly ILogger<LoginModel> _logger;
         private readonly IEntitiesRequest _entitiesRequest;
+        private readonly ShoppingCart _shoppingCart;
 
-        public LoginModel( ILogger<LoginModel> logger, IEntitiesRequest entitiesRequest)
+        public LoginModel( ILogger<LoginModel> logger, IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart)
         {
             
             _logger = logger;
             _entitiesRequest = entitiesRequest;
+            _shoppingCart = shoppingCart;
         }
 
         /// <summary>
@@ -90,6 +92,7 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
             public bool RememberMe { get; set; }
         }
 
+        
         public async Task OnGetAsync(string returnUrl = null)
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
@@ -109,9 +112,9 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
         private async Task MigrateShoppingCartAsync(string UserName)
         {
             // Associate shopping cart items with logged-in user
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+            _shoppingCart.GetCart(this.HttpContext);
 
-            await cart.MigrateCartAsync(UserName);
+            await _shoppingCart.MigrateCartAsync(UserName);
             this.HttpContext.Session.SetString(ShoppingCart.CartSessionKey,UserName);
         }
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -137,6 +140,34 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
                     var claimsIdentity = new ClaimsIdentity(
                         claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
+                    var authProperties = new AuthenticationProperties
+                    {
+                        //AllowRefresh = <bool>,
+                        // Refreshing the authentication session should be allowed.
+
+                        //ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(10),
+                        // The time at which the authentication ticket expires. A 
+                        // value set here overrides the ExpireTimeSpan option of 
+                        // CookieAuthenticationOptions set with AddCookie.
+
+                        //IsPersistent = true,
+                        // Whether the authentication session is persisted across 
+                        // multiple requests. When used with cookies, controls
+                        // whether the cookie's lifetime is absolute (matching the
+                        // lifetime of the authentication ticket) or session-based.
+
+                        //IssuedUtc = <DateTimeOffset>,
+                        // The time at which the authentication ticket was issued.
+
+                        //RedirectUri = <string>
+                        // The full path or absolute URI to be used as an http 
+                        // redirect response value.
+                    };
+
+                    await HttpContext.SignInAsync(
+                       CookieAuthenticationDefaults.AuthenticationScheme,
+                       new ClaimsPrincipal(claimsIdentity),
+                       authProperties);
                     await MigrateShoppingCartAsync(result.UserName);
                     _logger.LogInformation("User logged in.");
                     return LocalRedirect(returnUrl);

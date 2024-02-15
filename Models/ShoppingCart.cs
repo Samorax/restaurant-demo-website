@@ -1,40 +1,41 @@
 ﻿using FoodloyaleApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Http;
 using Newtonsoft.Json;
+using NuGet.Packaging.Signing;
 using restaurant_demo_website.Extensions;
 using restaurant_demo_website.Services;
 using SQLitePCL;
+using System.Net.Http;
 
 
 namespace restaurant_demo_website.Models
 {
     public partial class ShoppingCart
     {
+
+        public ShoppingCart(IEntitiesRequest entitiesRequest)
+        {
+            _entitiesRequest = entitiesRequest;
+        }
        
-       private HttpClient _httpClient = new HttpClient();
-       private IConfiguration _configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
-        
-        string ShoppingCartId { get; set; }
+        private IEntitiesRequest _entitiesRequest;
+
+        public static string ShoppingCartId { get; set; }
         
         public static IEnumerable<CartOrder> Carts { get; set; }
-        public IEntitiesRequest _entitiesRequest;
+        
         public const string CartSessionKey = "CartId";
-        
-        
 
-        private static ShoppingCart GetCart(ControllerBase controller)
+
+       /*  private static ShoppingCart GetCart(ControllerBase controller)
         {
             return GetCart(controller.Request.HttpContext);
-        }
+        } */
 
-        public static ShoppingCart GetCart(HttpContext httpContext)
+        public void GetCart(HttpContext httpContext)
         {
-            var cart = new ShoppingCart();
-            cart.ShoppingCartId = cart.GetCartId(httpContext);
-            return cart;
+            ShoppingCartId = GetCartId(httpContext);
         }
 
         public async Task AddToCart(Product product)
@@ -42,7 +43,7 @@ namespace restaurant_demo_website.Models
             // Get the matching cart and album instances
             CartOrder cartItem;
             
-            Carts = await new EntitiesRequest(_configuration,_httpClient).GetCartOrdersAsync();
+            Carts = await _entitiesRequest.GetCartOrdersAsync();
             if(Carts.Any()){
                 cartItem = Carts.FirstOrDefault(
                 c => c.CartOrderId == ShoppingCartId
@@ -58,7 +59,7 @@ namespace restaurant_demo_website.Models
                     Count = 1,
                     DateCreated = DateTime.Now
                 };
-               await new EntitiesRequest(_configuration,_httpClient).AddCartOrderAsync(cartItem);
+               await _entitiesRequest.AddCartOrderAsync(cartItem);
             }
             else
             {
@@ -66,7 +67,7 @@ namespace restaurant_demo_website.Models
                 // then add one to the quantity
                 var x = cartItem.Count + 1;
                 cartItem.Count = x;
-                await new EntitiesRequest(_configuration,_httpClient).UpdateCartOrderAsync(cartItem);
+                await _entitiesRequest.UpdateCartOrderAsync(cartItem);
             }
             }else{
                 cartItem = new CartOrder
@@ -76,7 +77,7 @@ namespace restaurant_demo_website.Models
                     Count = 1,
                     DateCreated = DateTime.Now
                 };
-                await new EntitiesRequest(_configuration, _httpClient).AddCartOrderAsync(cartItem);
+                await _entitiesRequest.AddCartOrderAsync(cartItem);
             }
              
             
@@ -103,7 +104,7 @@ namespace restaurant_demo_website.Models
                 }
                 else
                 {
-                    await new EntitiesRequest(_configuration, _httpClient).DeleteCartOrderAsync(cartItem);
+                    await _entitiesRequest.DeleteCartOrderAsync(cartItem);
                 }
                 // Save changes
                 
@@ -121,14 +122,14 @@ namespace restaurant_demo_website.Models
 
             foreach (var cartItem in cartItems)
             {
-                await new EntitiesRequest(_configuration,_httpClient).DeleteCartOrderAsync(cartItem);
+                await _entitiesRequest.DeleteCartOrderAsync(cartItem);
             }
    
            
         }
         public async Task<IEnumerable<CartOrder>> GetCartItemsAsync()
         {
-            Carts = await new EntitiesRequest(_configuration, _httpClient).GetCartOrdersAsync();
+            Carts = await _entitiesRequest.GetCartOrdersAsync();
             return Carts.Where(
                 cart => cart.CartOrderId == ShoppingCartId).ToList();
         }
@@ -154,7 +155,7 @@ namespace restaurant_demo_website.Models
 
             return total ?? 0;
         }
-        public async Task<int> CreateOrderAsync(Order order)
+        public async Task<string> CreateOrderAsync(Order order)
         {
             decimal orderTotal = 0;
 
@@ -173,18 +174,24 @@ namespace restaurant_demo_website.Models
                 // Set the order total of the shopping cart
                 orderTotal += (item.Count * item.Product.Price);
 
-                await new EntitiesRequest(_configuration,_httpClient).AddOrderDetailsAsync(orderDetail);
+                await _entitiesRequest.AddOrderDetailsAsync(orderDetail);
 
             }
             // Set the order's total to the orderTotal count
             order.TotalAmount = orderTotal;
 
+            // Generate the payment token for future payment
+            var _paymentObject = new PaymentObject{Amount = (long)orderTotal, OrderId = order.OrderID, Description = $"This order has sum total of {orderTotal}", Currency = "GBP" };
+            var paymentToken = await _entitiesRequest.CreateSetupIntent(_paymentObject);
+            order.PaymentToken = paymentToken;
+
             // Save the order
-            await new EntitiesRequest(_configuration,_httpClient).UpdateOrderAsync(order);
+            await _entitiesRequest.UpdateOrderAsync(order);
+            await _entitiesRequest.PostOrderToQueue(order);
             // Empty the shopping cart
             await EmptyCartAsync();
             // Return the OrderId as the confirmation number
-            return order.OrderID;
+            return paymentToken;
         }
 
         
@@ -213,17 +220,21 @@ namespace restaurant_demo_website.Models
         // be associated with their username
         public async Task MigrateCartAsync(string userName)
         {
-            
+             Carts = await _entitiesRequest.GetCartOrdersAsync();
              var shoppingCart = Carts.Where(
                 c => c.CartOrderId == ShoppingCartId);
 
             foreach (CartOrder item in shoppingCart)
             {
                 item.CartOrderId = userName;
-                await new EntitiesRequest(_configuration,_httpClient).UpdateCartOrderAsync(item);
+                await _entitiesRequest.UpdateCartOrderAsync(item);
             } 
             
         }
 
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

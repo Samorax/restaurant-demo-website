@@ -21,16 +21,17 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         
         private IEntitiesRequest _entitiesRequest;
+        private ShoppingCart _shoppingCart;
 
         public RegisterModel(
             IEntitiesRequest entitiesRequest,
           
-            ILogger<RegisterModel> logger)
+            ILogger<RegisterModel> logger, ShoppingCart shoppingCart)
         {
            
             _logger = logger;
-           
             _entitiesRequest = entitiesRequest;
+            _shoppingCart = shoppingCart;
         }
 
         /// <summary>
@@ -190,9 +191,9 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
         private async void MigrateShoppingCart(string UserName)
         {
             // Associate shopping cart items with logged-in user
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+            //var cart = ShoppingCart.GetCart(this.HttpContext);
         
-            await cart.MigrateCartAsync(UserName);
+            await _shoppingCart.MigrateCartAsync(UserName);
             this.HttpContext.Session.SetString(ShoppingCart.CartSessionKey, UserName);
         }
 

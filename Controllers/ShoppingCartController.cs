@@ -11,23 +11,25 @@ namespace restaurant_demo_website.Controllers
     public class ShoppingCartController : Controller
     {
         private IEntitiesRequest _entitiesRequest;
+        private ShoppingCart _shoppingCart;
 
-        public ShoppingCartController(IEntitiesRequest entitiesRequest) 
+        public ShoppingCartController(IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart) 
         {
             _entitiesRequest = entitiesRequest;
+            _shoppingCart = shoppingCart;
         }
         
         //
         // GET: /ShoppingCart/
         public async Task<ActionResult> IndexAsync()
         {
-            var cart = ShoppingCart.GetCart(HttpContext);
+            //var cart = ShoppingCart.GetCart(HttpContext);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
             {
-                CartItems = await cart.GetCartItemsAsync(),
-                CartTotal = await cart.GetTotalAsync()
+                CartItems = await _shoppingCart.GetCartItemsAsync(),
+                CartTotal = await _shoppingCart.GetTotalAsync()
             };
             // Return the view
             return View(viewModel);
@@ -42,8 +44,8 @@ namespace restaurant_demo_website.Controllers
             {
                 var addedProduct = products.FirstOrDefault(p => p.ProductID == id);
             // Add it to the shopping cart
-                var cart = ShoppingCart.GetCart(this.HttpContext);
-                await cart.AddToCart(addedProduct);
+                _shoppingCart.GetCart(this.HttpContext);
+                await _shoppingCart.AddToCart(addedProduct);
             }
             
 
@@ -56,7 +58,7 @@ namespace restaurant_demo_website.Controllers
         public async Task<ActionResult> RemoveFromCartAsync(int id)
         {
             // Remove the item from the cart
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+           // var cart = ShoppingCart.GetCart(this.HttpContext);
 
             // Get the name of the album to display confirmation
             var cartitems = await _entitiesRequest.GetCartOrdersAsync();
@@ -64,15 +66,15 @@ namespace restaurant_demo_website.Controllers
                 .Single(item => item.RecordId == id).Product.Name;
 
             // Remove from cart
-            int itemCount = await cart.RemoveFromCartAsync(id);
+            int itemCount = await _shoppingCart.RemoveFromCartAsync(id);
 
             // Display the confirmation message
             var results = new ShoppingCartRemoveViewModel
             {
                 Message =  (productName) +
                     " has been removed from your shopping cart.",
-                CartTotal = await cart.GetTotalAsync(),
-                CartCount = await cart.GetCountAsync(),
+                CartTotal = await _shoppingCart.GetTotalAsync(),
+                CartCount = await _shoppingCart.GetCountAsync(),
                 ItemCount = itemCount,
                 DeleteId = id
             };
@@ -83,9 +85,9 @@ namespace restaurant_demo_website.Controllers
         //[ChildActionOnly]
         public ActionResult CartSummary()
         {
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+            //var cart = ShoppingCart.GetCart(this.HttpContext);
 
-            ViewData["CartCount"] = cart.GetCountAsync();
+            ViewData["CartCount"] = _shoppingCart.GetCountAsync();
             return PartialView("CartSummary");
         }
     }

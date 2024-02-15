@@ -13,9 +13,12 @@ namespace restaurant_demo_website.Controllers
     public class CheckoutController : Controller
     {
         private IEntitiesRequest _entitiesRequest;
-        public CheckoutController(IEntitiesRequest entitiesRequest)
+        private ShoppingCart _shoppingCart;
+
+        public CheckoutController(IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart)
         {
             _entitiesRequest = entitiesRequest;
+            _shoppingCart = shoppingCart;
         }
         
         const string PromoCode = "FREE";
@@ -53,11 +56,14 @@ namespace restaurant_demo_website.Controllers
                     var orderAdded = await _entitiesRequest.AddOrderAsync(order);
                     
                     //Process the order
-                    var cart = ShoppingCart.GetCart(this.HttpContext);
-                    await cart.CreateOrderAsync(orderAdded);
+                    //var cart = ShoppingCart.GetCart(this.HttpContext);
+                    var paymentToken = await _shoppingCart.CreateOrderAsync(orderAdded);
 
-                    return RedirectToAction("Complete",
-                        new { id = orderAdded.OrderID });
+                    //redirect to payment page
+                    return Redirect($"https://pay.dojo.tech/checkout/{paymentToken}");
+
+                    //return RedirectToAction("Complete",
+                    //    new { id = orderAdded.OrderID });
             }
             catch
             {
