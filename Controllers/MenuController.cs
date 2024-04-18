@@ -1,6 +1,8 @@
 ﻿using restaurant_demo_website.Models;
 using Microsoft.AspNetCore.Mvc;
 using restaurant_demo_website.Services;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using restaurant_demo_website.ViewModels;
 
 namespace restaurant_demo_website.Controllers
 {
@@ -14,22 +16,34 @@ namespace restaurant_demo_website.Controllers
             _entitiesRequest = entitiesRequest;
         }
 
-        //Return the list of Products for the Restaurant.
+        
+        /// <summary>
+        /// Get the list of Produce by the restaurant and all Categories
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> IndexAsync()
         {
-            
-             products = await _entitiesRequest.GetProductsAsync();
+            products = await _entitiesRequest.GetProductsAsync();
+            List<string> categories = new List<string>();
 
                 if (products.Any())
                 {
                     foreach (var p in products)
                     {
                         p.imgUrl = GetImagesFromByteArray(p.photosUrl);
+                        categories.Add(p.Category);
                     }
+                    categories = categories.Distinct().ToList();
                 }
 
+            var ProductCategoryPage = new ProductsCategoryViewModel
+            {
+                Products = products,
+                Categories = categories
+            };
+
             
-            return View(products);
+            return View(ProductCategoryPage);
         }
 
         //images are stored in the database as byte. Convert them to base64 string.
@@ -41,12 +55,28 @@ namespace restaurant_demo_website.Controllers
         }
 
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> DetailsAsync(int id)
         {
+            products = await _entitiesRequest.GetProductsAsync();
             var product = products.FirstOrDefault(p => p.ProductID == id);
             if (product == null)
                 return View("Error");
             return View(product);
+        }
+
+        
+
+        /// <summary>
+        /// Gets the list of products for a category
+        /// </summary>
+        /// <param name="categoryName"></param>
+        /// <returns>Products for a Category</returns>
+        public async Task<IActionResult> Category(string categoryName)
+        {
+            products = await _entitiesRequest.GetProductsAsync();
+            var CategoryProducts = products.Where(p => p.Category.Equals(categoryName)).ToList();
+
+            return View(CategoryProducts);
         }
     }
 }

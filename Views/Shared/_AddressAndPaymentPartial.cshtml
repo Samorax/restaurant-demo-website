@@ -1,17 +1,5 @@
 ﻿@model restaurant_demo_website.ViewModels.AddressandPaymentViewModel
 
-
-@{
-    ViewData["Title"] = "AddressAndPayment";
-}
-
-
-<h1>Address And Payment</h1>
-
-<h4>Order</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
         <form asp-action="AddressAndPayment" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="row">
@@ -101,10 +89,7 @@
                 <input type="submit" value="Proceed to Payment" class="btn btn-primary" />
             </div>
         </form>
-    </div>
-
-
-</div>
+    
 
 <div>
     <a asp-controller="ShoppingCart" asp-action="Index">Back to List</a>

@@ -41,7 +41,7 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<IEntitiesRequest, EntitiesRequest>();
 builder.Services.AddScoped<ShoppingCart>();
-
+builder.Services.AddMemoryCache();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

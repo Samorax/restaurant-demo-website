@@ -44,54 +44,48 @@ namespace restaurant_demo_website.Models
             CartOrder cartItem;
             
             Carts = await _entitiesRequest.GetCartOrdersAsync();
-            if(Carts.Any()){
-                cartItem = Carts.FirstOrDefault(
-                c => c.CartOrderId == ShoppingCartId
-                && c.ProductId == product.ProductID);
+            if(Carts.Any())
+            {
+                cartItem = Carts.Where(c => c.CartOrderId == ShoppingCartId && c.Name == product.Name).FirstOrDefault();
 
                 if (cartItem == null)
-            {
-                // Create a new cart item if no cart item exists
-                cartItem = new CartOrder
                 {
-                    ProductId = product.ProductID,
-                    CartOrderId = ShoppingCartId,
-                    Count = 1,
-                    DateCreated = DateTime.Now
-                };
-               await _entitiesRequest.AddCartOrderAsync(cartItem);
-            }
-            else
-            {
-                // If the item does exist in the cart, 
-                // then add one to the quantity
-                var x = cartItem.Count + 1;
-                cartItem.Count = x;
-                await _entitiesRequest.UpdateCartOrderAsync(cartItem);
-            }
-            }else{
-                cartItem = new CartOrder
-                {
-                    ProductId = product.ProductID,
-                    CartOrderId = ShoppingCartId,
-                    Count = 1,
-                    DateCreated = DateTime.Now
-                };
+                    // Create a new cart item if no cart item exists
+                    cartItem = new CartOrder
+                    {
+                        Name = product.Name,
+                        CartOrderId = ShoppingCartId,
+                        Count = 1,
+                        DateCreated = DateTime.Now,
+                        Price = product.Price
+                    };
                 await _entitiesRequest.AddCartOrderAsync(cartItem);
-            }
-             
-            
+                }
+                else
+                {
+                    // If the item does exist in the cart, 
+                    // then add one to the quantity
+                    cartItem.Count++;
+                    await _entitiesRequest.UpdateCartOrderAsync(cartItem);
+                }
+                }else{
+                    cartItem = new CartOrder
+                    {
+                        Name = product.Name,
+                        CartOrderId = ShoppingCartId,
+                        Count = 1,
+                        DateCreated = DateTime.Now,
+                        Price = product.Price
+                    };
+                    await _entitiesRequest.AddCartOrderAsync(cartItem);
+                }
         }
 
         
 
-        public async Task<int> RemoveFromCartAsync(int id)
+        public async Task<int> RemoveFromCartAsync(int id,CartOrder cartItem)
         {
             // Get the cart
-            var cartItems = Carts;
-            var cartItem = cartItems.Single(
-                cart => cart.CartOrderId.ToString() == ShoppingCartId
-                && cart.ProductId == id);
 
             int itemCount = 0;
 
@@ -129,13 +123,14 @@ namespace restaurant_demo_website.Models
         }
         public async Task<IEnumerable<CartOrder>> GetCartItemsAsync()
         {
-            Carts = await _entitiesRequest.GetCartOrdersAsync();
+            var Carts = await _entitiesRequest.GetCartOrdersAsync();
             return Carts.Where(
                 cart => cart.CartOrderId == ShoppingCartId).ToList();
         }
         public async Task<int> GetCountAsync()
         {
             // Get the count of each item in the cart and sum them up
+            var Carts = await _entitiesRequest.GetCartOrdersAsync();
             int? count = (from cartItems in Carts
                           where cartItems.CartOrderId.ToString() == ShoppingCartId
                           select (int?)cartItems.Count).Sum();
@@ -148,17 +143,18 @@ namespace restaurant_demo_website.Models
             // Multiply album price by count of that album to get 
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
+            var Carts = await _entitiesRequest.GetCartOrdersAsync();
             decimal? total = (from cartItems in Carts
                               where cartItems.CartOrderId == ShoppingCartId
                               select (int?)cartItems.Count *
-                              cartItems.Product.Price).Sum();
+                              cartItems.Price).Sum();
 
             return total ?? 0;
         }
         public async Task<string> CreateOrderAsync(Order order)
         {
             decimal orderTotal = 0;
-
+            Carts = await _entitiesRequest.GetCartOrdersAsync();
             var cartItems = Carts.Where(c=>c.CartOrderId == ShoppingCartId).ToList();
             // Iterate over the items in the cart, 
             // adding the order details for each
@@ -166,13 +162,13 @@ namespace restaurant_demo_website.Models
             {
                 var orderDetail = new OrderDetail
                 {
-                    ProductId = item.ProductId,
+                    Name = item.Name,
                     OrderId = order.OrderID,
-                    UnitPrice = item.Product.Price,
+                    UnitPrice = item.Price,
                     Quantity = item.Count
                 };
                 // Set the order total of the shopping cart
-                orderTotal += (item.Count * item.Product.Price);
+                orderTotal += (item.Count * item.Price);
 
                 await _entitiesRequest.AddOrderDetailsAsync(orderDetail);
 
@@ -181,7 +177,7 @@ namespace restaurant_demo_website.Models
             order.TotalAmount = orderTotal;
 
             // Generate the payment token for future payment
-            var _paymentObject = new PaymentObject{Amount = (long)orderTotal, OrderId = order.OrderID, Description = $"This order has sum total of {orderTotal}", Currency = "GBP" };
+            var _paymentObject = new PaymentObject{Amount = (double)orderTotal, OrderId = order.OrderID, Description = $"This order has sum total of {orderTotal}", Currency = "GBP" };
             var paymentToken = await _entitiesRequest.CreateSetupIntent(_paymentObject);
             order.PaymentToken = paymentToken;
 

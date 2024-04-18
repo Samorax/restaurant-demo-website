@@ -2,16 +2,17 @@
 <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
 @if (HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
 {
-        <ul>
-            <li>
-                <a href="/Identity/Account/logout">Sign out</a>
-            </li>
-        </ul>
+        <li class="nav-item">
+            <a href="/Identity/Account/logout">Sign out</a>
+            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Index">Account</a>
+        </li>
+       
 }
 else
 {
-    <ul>
-        <li><a href="/Identity/Account/login">Sign in</a></li>
-    </ul>
+        <li class="nav-item">
+            <a href="/Identity/Account/login">Sign in</a>
+        </li>
+
 }
     </form>

@@ -195,6 +195,7 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
         
             await _shoppingCart.MigrateCartAsync(UserName);
             this.HttpContext.Session.SetString(ShoppingCart.CartSessionKey, UserName);
+            _shoppingCart.GetCart(this.HttpContext);
         }
 
         private Customer CreateUser()

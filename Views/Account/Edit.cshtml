@@ -1,0 +1,33 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Edit";
+}
+@model restaurant_demo_website.Models.Customer
+
+@using(Html.BeginForm("Update","Account",FormMethod.Post))
+{
+    
+    <div class="form-control">       
+        @Html.LabelFor(c=>c.FirstName)
+        @Html.EditorFor(c=>c.FirstName)
+    </div>
+    <div class="form-control">
+        @Html.LabelFor(c=>c.LastName)
+        @Html.EditorFor(c=>c.LastName)
+    </div>
+    <div class="form-control">
+        @Html.LabelFor(c => c.Email)
+        @Html.EditorFor(c=>c.Email)
+    </div>
+    <div class="form-control">
+        @Html.LabelFor(c=>c.Birthday)
+        @Html.EditorFor(c=>c.Birthday)
+    </div>
+    <div class="form-control">
+        @Html.LabelFor(c=>c.PhoneNumber)
+        @Html.EditorFor(c=>c.PhoneNumber)
+    </div>
+  <input type="submit" value="Save" class="btn btn-primary"/>
+}

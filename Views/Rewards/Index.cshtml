@@ -1,0 +1,28 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model IEnumerable<restaurant_demo_website.Models.Rewards>
+@{
+    ViewData["Title"] = "Rewards";
+}
+@if(Model.Any())
+{
+    @foreach (Rewards m in Model)
+    {
+
+        <li>@m.Title.</li>
+        
+        <a data-ajax="true" data-ajax-url="/rewards/claimreward/@m.RewardsId" data-ajax-update="#claimMessage" class="btn btn-primary">Claim</a>
+        <p id="claimMessage"></p>
+    }
+
+}
+else
+{
+    <p>There are no Rewards, listed at this moment.</p>
+}
+
+<script src="~/lib/jquery/dist/jquery.js"></<script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
+ 

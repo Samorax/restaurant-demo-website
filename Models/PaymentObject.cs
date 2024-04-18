@@ -2,7 +2,7 @@ namespace restaurant_demo_website.Models
 {
     public class PaymentObject
     {
-        public long? Amount { get; set; }
+        public double Amount { get; set; }
         public string Currency { get; set; }
         public string CustomerId { get; set; }
         public string CustomerEmail { get; set; }
