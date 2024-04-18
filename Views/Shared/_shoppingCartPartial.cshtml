@@ -1,0 +1,6 @@
+﻿@inject ShoppingCart _cartService;
+<li class="nav-item">
+    <a class="nav-link text-dark" asp-area="" asp-controller="ShoppingCart" asp-action="Index">
+        Cart<span class="badge badge-info" id="cartCount">@await _cartService.GetCountAsync()</span>
+    </a>
+</li>

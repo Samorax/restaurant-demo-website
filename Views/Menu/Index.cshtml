@@ -13,7 +13,8 @@
             <img src="@Url.Content(p.imgUrl)" alt="@p.Name" style="height:200px;width:200px"/>
             <p>@p.Name</p>
             <p>@String.Format("{0:F}", @p.Price)</p>
-            @Html.ActionLink("Add to Cart","AddToCart","ShoppingCart",new{id=p.ProductID}, new{@class="btn btn-primary"})
+            <p>Point:@p.LoyaltyPoints</p>
+            <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
             </a>
         </li>
     }
@@ -21,3 +22,8 @@
 </div>
 
 
+@section scripts{
+<script src="~/lib/jquery/dist/jquery.js"></<script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
+}

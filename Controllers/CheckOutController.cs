@@ -1,7 +1,7 @@
 ﻿using FoodloyaleApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using NuGet.Common;
 using restaurant_demo_website.Models;
 using restaurant_demo_website.Services;
 using restaurant_demo_website.ViewModels;
@@ -26,12 +26,43 @@ namespace restaurant_demo_website.Controllers
 
         //
         // GET: /Checkout/AddressAndPayment
-        public async Task<ActionResult> AddressAndPaymentAsync()
+        public async Task<ActionResult> OrderSummaryAsync()
         {
-            
-            // Return the view
-            return View();
+           var viewModel = new ShoppingCartViewModel
+            {
+                CartItems = await _shoppingCart.GetCartItemsAsync(),
+                CartTotal = await _shoppingCart.GetTotalAsync()
+            }; 
+            return View(viewModel);
+        }
 
+        [HttpPost]
+        public async Task<JsonResult> ChargeVoucherAsync(string voucher)
+        {
+            var o = await _shoppingCart.GetTotalAsync();
+            var c = new ChargeVoucherModel {VoucherNumber = voucher, OrderTotalAmount = o};
+            var r = await _entitiesRequest.ChargeVoucher(c);
+            AjaxVoucherResult result;
+            if(r.Status == "Successful")
+            {
+                //add voucher as cartitems
+                var voucherOrder = new CartOrder 
+                { 
+                    Name = voucher,
+                    Count = 1, 
+                    Price = r.OrderTotalAmount - o, 
+                    DateCreated = DateTime.Now, 
+                    CartOrderId = ShoppingCart.ShoppingCartId
+                };
+                await _entitiesRequest.AddCartOrderAsync(voucherOrder);
+                //create a new row in the table for the voucher 
+                //var voucherRow = $"<tr><td>{voucherOrder.Name}</td><td>{voucherOrder.Price}</td><td>{voucherOrder.Count}</td></tr>";
+                //result = new AjaxVoucherResult{Reason = r.Reason, UpdateItem = voucherRow, NewCartTotal = r.OrderTotalAmount};
+                return Json(r.Reason);
+                
+            }
+           //result = new AjaxVoucherResult{Reason = r.Reason};
+            return Json(r.Reason);
         }
         //
         // POST: /Checkout/AddressAndPayment
@@ -67,8 +98,8 @@ namespace restaurant_demo_website.Controllers
             }
             catch
             {
-                var viewModel = new AddressandPaymentViewModel();
-                return View(viewModel);
+                //var viewModel = new AddressandPaymentViewModel();
+                return RedirectToAction("OrderSummary");
             }
         }
 

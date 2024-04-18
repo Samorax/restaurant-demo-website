@@ -77,7 +77,7 @@ namespace restaurant_demo_website.Services
 
         public async Task PostOrderToQueue(Order order)
         {
-            var response = await _httpClient.PostAsJsonAsync<Order>("/api/orderqueue", order);
+            var response = await _httpClient.PostAsJsonAsync<Order>("/api/queue/orderqueue", order);
             response.EnsureSuccessStatusCode();
         }
 
@@ -118,6 +118,8 @@ namespace restaurant_demo_website.Services
             return JsonConvert.DeserializeObject<Customer>(await response.Content.ReadAsStringAsync());
         }
 
+        
+
         public async Task<string> CreateSetupIntent(PaymentObject paymentObject)
         {
             var response = await _httpClient.PostAsJsonAsync("/api/dojo/setupintent", paymentObject);
@@ -125,6 +127,50 @@ namespace restaurant_demo_website.Services
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<IEnumerable<Rewards>> GetRewardsAsync()
+        {
+            var response = await _httpClient.GetFromJsonAsync<IEnumerable<Rewards>>("/api/rewards");
+            return response;
+        }
+
         
+        public async Task<RewardClaimResponse> ClaimRewardAsync(ClaimRewardModel claimRewardModel)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/rewards/claimreward", claimRewardModel);
+            response.EnsureSuccessStatusCode();
+            return JsonConvert.DeserializeObject<RewardClaimResponse>(await response.Content.ReadAsStringAsync());
+        }
+
+        public async Task<Customer> GetCustomerAsync(string customerId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<Customer>($"/api/customers/{customerId}");
+            return response;
+        }
+
+        public async Task UpdateCustomerAsync(Customer customer)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/customers/{customer.Id}",customer);
+            response.EnsureSuccessStatusCode();
+            
+        }
+
+        public async Task RemoveCustomerAsync(Customer? customer)
+        {
+            var response = await _httpClient.DeleteAsync($"/api/customers/{customer.Id}");
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<VoucherChargeResponse> ChargeVoucher(ChargeVoucherModel c)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/vouchers/chargevoucher",c);
+            response.EnsureSuccessStatusCode();
+            return JsonConvert.DeserializeObject<VoucherChargeResponse>(await response.Content.ReadAsStringAsync());
+        }
+
+        public async Task<ApplicationUser> GetRestaurantInfo()
+        {
+            var response = await _httpClient.GetFromJsonAsync<ApplicationUser>("/api/restaurant");
+            return response;
+        }
     }
 }

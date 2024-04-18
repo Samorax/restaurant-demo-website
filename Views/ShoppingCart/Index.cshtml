@@ -2,45 +2,19 @@
 @{
     ViewBag.Title = "Shopping Cart";
 }
-<script src="/Scripts/jquery-1.4.4.min.js"
-type="text/javascript"></script>
-<script type="text/javascript">
-    $(function () {
-        // Document.ready -> link up remove event handler
-        $(".RemoveLink").click(function () {
-            // Get the id from the link
-            var recordToDelete = $(this).attr("data-id");
-            if (recordToDelete != '') {
-                // Perform the ajax post
-                $.post("/ShoppingCart/RemoveFromCart", {"id": recordToDelete },
-                    function (data) {
-                        // Successful requests get here
-                        // Update the page elements
-                        if (data.ItemCount == 0) {
-                            $('#row-' + data.DeleteId).fadeOut('slow');
-                        } else {
-                            $('#item-count-' + data.DeleteId).text(data.ItemCount);
-                        }
-                        $('#cart-total').text(data.CartTotal);
-                        $('#update-message').text(data.Message);
-                        $('#cart-status').text('Cart (' + data.CartCount + ')');
-                    });
-            }
-        });
-    });
-</script>
+
 <h3>
     <em>Review</em> your cart:
  </h3>
 <p class="button">
-    @Html.ActionLink("Checkout >>", "AddressAndPayment", "Checkout")
+    @Html.ActionLink("Checkout >>", "OrderSummary", "Checkout",null,new{@class = "btn btn-primary"})
 </p>
 <div id="update-message">
 </div>
-<table>
+<table class="table">
     <tr>
         <th>
-            Album Name
+            Delicacy Name
         </th>
         <th>
             Price (each)
@@ -55,19 +29,17 @@ Model.CartItems)
     {
         <tr id="row-@item.RecordId">
             <td>
-                @Html.ActionLink(item.Product.Name,
-"Details", "Store", new { id = item.ProductId }, null)
+                @item.Name
             </td>
             <td>
-                @item.Product.Price
+                @item.Price
             </td>
             <td id="item-count-@item.RecordId">
                 @item.Count
             </td>
             <td>
-                <a href="#" class="RemoveLink"
-data-id="@item.RecordId">Remove
-from cart</a>
+                <a href="" data-ajax="true" class="RemoveLink"  data-ajax-url="/ShoppingCart/RemoveFromCart/@item.RecordId" data-ajax-complete="Completed">
+                Remove from cart</a>
             </td>
         </tr>
     }
@@ -84,3 +56,24 @@ from cart</a>
         </td>
     </tr>
 </table>
+
+@section scripts{
+   <script src="~/lib/jquery/dist/jquery.js"></<script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
+<script type="text/javascript">
+    Completed = function (data) {
+                        var d = data.responseJSON;
+                        // Successful requests get here
+                        // Update the page elements
+                        if (d.itemCount == 0) {
+                            $('#row-' + d.deleteId).fadeOut('slow');
+                        } else {
+                            $('#item-count-' + d.deleteId).text(d.itemCount);
+                        }
+                        $('#cart-total').text(d.cartTotal);
+                        $('#update-message').text(d.message);
+                        $('#cart-status').text('Cart (' + d.cartCount + ')');
+                    };
+</script>
+}

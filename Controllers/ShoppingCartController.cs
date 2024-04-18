@@ -44,34 +44,36 @@ namespace restaurant_demo_website.Controllers
             {
                 var addedProduct = products.FirstOrDefault(p => p.ProductID == id);
             // Add it to the shopping cart
+            if(ShoppingCart.ShoppingCartId == null){
                 _shoppingCart.GetCart(this.HttpContext);
+            }
+                
                 await _shoppingCart.AddToCart(addedProduct);
             }
             
 
             // Go back to the main store page for more shopping
-            return RedirectToAction("Index");
+            return Json(await _shoppingCart.GetCountAsync());
         }
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5
-        [HttpPost]
-        public async Task<ActionResult> RemoveFromCartAsync(int id)
+        
+        public async Task<IActionResult> RemoveFromCartAsync(int id)
         {
             // Remove the item from the cart
            // var cart = ShoppingCart.GetCart(this.HttpContext);
 
             // Get the name of the album to display confirmation
             var cartitems = await _entitiesRequest.GetCartOrdersAsync();
-            string productName = cartitems
-                .Single(item => item.RecordId == id).Product.Name;
+            CartOrder cartItem = cartitems.Where(item => item.CartOrderId.Equals(ShoppingCart.ShoppingCartId) && item.RecordId == id).FirstOrDefault();
 
             // Remove from cart
-            int itemCount = await _shoppingCart.RemoveFromCartAsync(id);
+            int itemCount = await _shoppingCart.RemoveFromCartAsync(id, cartItem);
 
             // Display the confirmation message
             var results = new ShoppingCartRemoveViewModel
             {
-                Message =  (productName) +
+                Message =  (cartItem.Name) +
                     " has been removed from your shopping cart.",
                 CartTotal = await _shoppingCart.GetTotalAsync(),
                 CartCount = await _shoppingCart.GetCountAsync(),

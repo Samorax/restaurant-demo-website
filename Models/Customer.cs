@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace restaurant_demo_website.Models
 {
     public class Customer:IdentityUser
     {
-        
+        public int RecordId { get; set; }
         public Guid ApplicationUserID { get; set; }
+        
         public string FirstName { get; set; }
         public string LastName { get; set; }
 

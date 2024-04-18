@@ -15,6 +15,9 @@ namespace restaurant_demo_website.Services
 
         public Task<IEnumerable<Order>> GetOrdersAsync();
 
+        public Task<IEnumerable<Rewards>> GetRewardsAsync();
+        public Task<RewardClaimResponse> ClaimRewardAsync(ClaimRewardModel claimRewardModel);
+
         public Task<Order> AddOrderAsync(Order order);
         public Task UpdateOrderAsync(Order order);
 
@@ -26,5 +29,11 @@ namespace restaurant_demo_website.Services
         public Task<Customer> CustomerSignInAsync(CustomerSignIn customer);
 
         public Task<string> CreateSetupIntent(PaymentObject paymentObject);
+        public Task<Customer> GetCustomerAsync(string customerId);
+        Task UpdateCustomerAsync(Customer customer);
+        Task RemoveCustomerAsync(Customer? customer);
+        Task<VoucherChargeResponse> ChargeVoucher(ChargeVoucherModel c);
+
+        Task<ApplicationUser> GetRestaurantInfo();
     }
 }

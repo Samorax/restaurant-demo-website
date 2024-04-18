@@ -1,0 +1,72 @@
+﻿@model restaurant_demo_website.ViewModels.ShoppingCartViewModel
+    @using restaurant_demo_website.ViewModels
+<div class="row">
+    <div class="col-md-5">
+       @await Html.PartialAsync("_AddressAndPaymentPartial", new AddressandPaymentViewModel())
+          @* <partial name="_AddressAndPaymentPartial"/> *@
+    </div>
+    <div class="col-md-4">
+        <table class="table">
+            <tbody id="orderSummary">
+                <tr>
+                        <th>Product Name</th>
+                        <th>Price (each)</th>
+                        <th>Quantity</th>
+                        <th></th>
+                    </tr>
+                    @foreach (var item in Model.CartItems)
+                    {
+                        <tr id="row-@item.RecordId">
+                            <td>
+                                @item.Name
+                            </td>
+                            <td>
+                                @item.Price
+                            </td>
+                            <td id="item-count-@item.RecordId">
+                                @item.Count
+                            </td>
+                        </tr>
+                    }
+            </tbody>
+            <tfoot>
+                        <td>
+                            Total
+                        </td>
+                        <td>
+                        </td>
+                       
+                        <td id="cart-total">
+                            @Model.CartTotal
+                        </td>
+                    </tfoot>
+   
+</table> 
+<form method="post"  data-ajax="true" data-ajax-method="post" data-ajax-url="/checkout/chargevoucher" data-ajax-success="Completed">
+    <input type="text" placeholder="apply voucher" name="voucher"/>
+    <button type="submit" value="Apply" class="btn btn-primary">Apply</button>
+    <p id="voucherUpdate"></p>
+</form>
+
+    </div>
+    
+</div>
+
+@section scripts{
+<script src="~/lib/jquery/dist/jquery.js"></<script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
+<script>
+    Completed = function (xhr){
+        $("#voucherUpdate")[0].innerText = xhr;
+        if(xhr === null){
+            location.reload();
+        };
+
+        @* var c = $("<tr />").html(xhr.updateItem).text();
+        $("#orderSummary")[0].append(c);
+
+        $("#cart-total")[0].innerText = xhr.newCartTotal; *@
+    }
+</script>
+}

@@ -1,0 +1,22 @@
+﻿@model FoodloyaleApi.Models.ApplicationUser;
+@{
+    ViewData["Title"] = "Contact Us";
+
+}
+
+<div>
+    <address>
+        <p>@Model.BusinessAddress1</br>
+        @Model.BusinessAddress2</br>
+        @Model.State</br>
+        @Model.PostalCode</br>
+        @Model.Country</p>
+    </address>
+</div>
+
+<div id="map"></div>
+
+@section scripts{
+    
+}
+
