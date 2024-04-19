@@ -1,3 +1,5 @@
+# Build A Restaurant Website
+
 This is a basic template website for restaurants that are clients of Foodloyale. 
 Much has been done to code efficient functionality of the website, you only need to apply the styling of your preference or make adjustments you want.
 
@@ -14,12 +16,15 @@ The Functionalities includes:
 8. An integrated Payment collection capability
 9. Caching Capability
 
-Pre-requisites
+##
+## Pre-requisites
+
 This template was created using the Asp.net Core Framework. Thus, its usage requires knowledge of the Framework.
 An API Key - This can be obtained from the 'Connect your Website and Mobile app' settings section of the POS app.
 
+##
+## How to spin up your website
 
-How to spin up your website
 1. Load your Products into the POS app.
 2. Select your Payment Processor from the Payment Settings section of the POS.
 3. Get an API Key from the 'Connect your Website and Mobile app' settings section of the POS.
