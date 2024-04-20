@@ -1,14 +1,23 @@
-@model IEnumerable<restaurant_demo_website.Models.Product>
+@model restaurant_demo_website.ViewModels.ProductsCategoryViewModel
 
 @{
     ViewData["Title"] = "Menu";
 }
+<ul class="nav justify-content-center">
+@foreach(var category in Model.Categories)
+{
+    
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="@Url.Action("Category","Menu",new{categoryName=category})">@category</a>
+        </li>
+}
+</ul>
 
-<div>
-    <ul style="list-style-type:none;">
-    @foreach(Product p in Model)
+<div class="container img-fluid">
+    <ul style="list-style-type:none;" class="row">
+    @foreach(Product p in Model.Products)
     {
-        <li>
+        <li class="col">
             <a href="@Url.Action("Details","Menu",new {id= p.ProductID})">
             <img src="@Url.Content(p.imgUrl)" alt="@p.Name" style="height:200px;width:200px"/>
             <p>@p.Name</p>

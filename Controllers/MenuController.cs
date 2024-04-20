@@ -3,17 +3,22 @@ using Microsoft.AspNetCore.Mvc;
 using restaurant_demo_website.Services;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using restaurant_demo_website.ViewModels;
+using Microsoft.Extensions.Caching.Memory;
+using FoodloyaleApi.Models;
 
 namespace restaurant_demo_website.Controllers
 {
     public class MenuController : Controller
     {
         private readonly IEntitiesRequest _entitiesRequest;
+        private IMemoryCache _memoryCache;
+
         private static IEnumerable<Product> products { get; set; }
 
-        public MenuController(IEntitiesRequest entitiesRequest)
+        public MenuController(IEntitiesRequest entitiesRequest, IMemoryCache memoryCache)
         {
             _entitiesRequest = entitiesRequest;
+            _memoryCache = memoryCache;
         }
 
         
@@ -23,6 +28,21 @@ namespace restaurant_demo_website.Controllers
         /// <returns></returns>
         public async Task<IActionResult> IndexAsync()
         {
+            ApplicationUser restaurantinfo = new ApplicationUser();
+            if (ShoppingCart.CartSessionKey != null)
+            {
+                if (!_memoryCache.TryGetValue(ShoppingCart.CartSessionKey, out ApplicationUser u))
+                {
+                    restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
+                    _memoryCache.Set(ShoppingCart.CartSessionKey, restaurantinfo);
+                }
+                else
+                {
+                    restaurantinfo = u;
+                }
+
+            }
+            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
             products = await _entitiesRequest.GetProductsAsync();
             List<string> categories = new List<string>();
 
@@ -39,7 +59,8 @@ namespace restaurant_demo_website.Controllers
             var ProductCategoryPage = new ProductsCategoryViewModel
             {
                 Products = products,
-                Categories = categories
+                Categories = categories,
+                CurrentCategory = "All"
             };
 
             
@@ -58,7 +79,14 @@ namespace restaurant_demo_website.Controllers
         public async Task<IActionResult> DetailsAsync(int id)
         {
             products = await _entitiesRequest.GetProductsAsync();
-            var product = products.FirstOrDefault(p => p.ProductID == id);
+            Product product = products.FirstOrDefault(p => p.ProductID == id);
+            product.imgUrl = GetImagesFromByteArray(product.photosUrl);
+            if (!string.IsNullOrEmpty(product.Allergens))
+            {
+                product.DiffAllergen = product.Allergens.Split(",");
+            }
+                    
+              
             if (product == null)
                 return View("Error");
             return View(product);
@@ -74,9 +102,30 @@ namespace restaurant_demo_website.Controllers
         public async Task<IActionResult> Category(string categoryName)
         {
             products = await _entitiesRequest.GetProductsAsync();
+            List<string> categories = new List<string>();
             var CategoryProducts = products.Where(p => p.Category.Equals(categoryName)).ToList();
+            if (CategoryProducts.Any())
+            {
+                
+                foreach (var p in products)
+                {
+                    p.imgUrl = GetImagesFromByteArray(p.photosUrl);
+                    
+                    categories.Add(p.Category);
+                }
+                categories = categories.Distinct().ToList();
+            }
 
-            return View(CategoryProducts);
+            var ProductCategoryPage = new ProductsCategoryViewModel
+            {
+                Products = CategoryProducts,
+                Categories = categories,
+                CurrentCategory = categoryName
+            };
+
+
+            return View(ProductCategoryPage);
+
         }
     }
 }

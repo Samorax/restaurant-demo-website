@@ -6,5 +6,6 @@ namespace restaurant_demo_website.ViewModels
     {
         public required IEnumerable<Product> Products { get; set; }
         public required List<String> Categories { get; set; }
+        public required string CurrentCategory { get; set; }
     }
 }
