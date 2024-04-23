@@ -46,7 +46,7 @@ namespace restaurant_demo_website.Models
             Carts = await _entitiesRequest.GetCartOrdersAsync();
             if(Carts.Any())
             {
-                cartItem = Carts.Where(c => c.CartOrderId == ShoppingCartId && c.Name == product.Name).FirstOrDefault();
+                cartItem = Carts.FirstOrDefault(c => c.CartOrderId == ShoppingCartId && c.Name == product.Name);
 
                 if (cartItem == null)
                 {

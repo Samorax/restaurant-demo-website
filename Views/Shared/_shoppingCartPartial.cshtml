@@ -1,6 +1,11 @@
 ﻿@inject ShoppingCart _cartService;
 <li class="nav-item">
     <a class="nav-link text-dark" asp-area="" asp-controller="ShoppingCart" asp-action="Index">
-        Cart<span class="badge badge-info" id="cartCount">@await _cartService.GetCountAsync()</span>
+        <i class="fa-solid fa-cart-shopping">
+            <span class="position-absolute top-10 start-70 translate-middle badge rounded-pill bg-danger" id="cartCount">
+                @await _cartService.GetCountAsync()
+                <span class="visually-hidden">unread messages</span>
+            </span>
+        </i>
     </a>
 </li>

@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="Views\Rewards\" />
+    <Folder Include="wwwroot\css\"/>
   </ItemGroup>
 
 </Project>

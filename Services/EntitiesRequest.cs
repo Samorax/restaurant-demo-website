@@ -122,9 +122,9 @@ namespace restaurant_demo_website.Services
 
         public async Task<string> CreateSetupIntent(PaymentObject paymentObject)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/dojo/setupintent", paymentObject);
+            var response = await _httpClient.PostAsJsonAsync("/api/payment/setupintent", paymentObject);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<string>(await response.Content.ReadAsStringAsync());
         }
 
         public async Task<IEnumerable<Rewards>> GetRewardsAsync()

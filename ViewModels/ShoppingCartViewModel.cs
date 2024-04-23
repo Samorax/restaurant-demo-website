@@ -7,5 +7,7 @@ namespace restaurant_demo_website.ViewModels
     {
         public IEnumerable<CartOrder> CartItems { get; set; }
         public decimal CartTotal { get; set; }
+        public decimal DeliveryFee { get; set;}
+        public decimal VAT {  get; set;}
     }
 }

@@ -1,33 +1,39 @@
 @model restaurant_demo_website.Models.Product
-
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <img src="@Url.Content(Model.imgUrl)" class="img-thumbnail" alt="image_of_delicacy">
+@{
+    ViewData["Title"] = Model.Name;
+}
+<div class="card mb-3" style="max-width: 600px;">
+    <div class="row g-0">
+        <div class="col-md-6">
+            <img src="@Url.Content(Model.imgUrl)" class="img-thumbnail img-fluid rounded-start" alt="image_of_delicacy">
         </div>
-       
-        <div class="col">
-            <p>Name:@Model.Name</p>
-            <p>Price: @String.Format("{0:F}", Model.Price)</p>
-            <p>Category: @Model.Category</p>
-            <p>Code:@Model.Code</p>
-            <p>Points: @Model.LoyaltyPoints</p>
-            <p>Description:@Model.Description</p>
-            @if (Model.DiffAllergen != null)
-            {
-                <ul>
-                    @foreach (var allergen in Model.DiffAllergen)
-                    {
-                        <li>@allergen</li>
-                    }
-                </ul>
-            }
+        <div class="col-md-6">
+            <div class="card-body">
+                <h5 class="card-title">@Model.Name</h5>
                 
-           
-            <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@Model.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
+                <p class="card-text">Price: @String.Format("{0:c}", Model.Price)</p>
+                <p class="card-text">Category: @Model.Category</p>
+                <p class="card-text">Code:@Model.Code</p>
+                <p class="card-text">Points: @Model.LoyaltyPoints</p>
+                <p class="card-text">Description:@Model.Description</p>
+                    @if (Model.DiffAllergen != null)
+                    {
+                        <p>Allergens:
+                    <ul>
+                            @foreach (var allergen in Model.DiffAllergen)
+                            {
+                            <span class="badge rounded-pill text-black bg-primary">@allergen</span>
+                            }
+                    </ul>
+                    </p>
+                    }
+                
+                <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@Model.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
+            </div>
         </div>
     </div>
 </div>
+
 
 @section scripts {
     <script src="~/lib/jquery/dist/jquery.js">

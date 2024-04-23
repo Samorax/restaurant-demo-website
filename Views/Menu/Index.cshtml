@@ -3,28 +3,55 @@
 @{
     ViewData["Title"] = "Menu";
 }
-<ul class="nav justify-content-center">
-@foreach(var category in Model.Categories)
-{
-    
-        <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="@Url.Action("Category","Menu",new{categoryName=category})">@category</a>
-        </li>
-}
-</ul>
+<div class="nav justify-content-center">
+    <ul class="nav">
+        @foreach (var category in Model.Categories)
+        {
 
-<div class="container img-fluid">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="@Url.Action("Category","Menu",new{categoryName=category})">@category</a>
+            </li>
+
+        }
+    </ul>
+    <form class="d-flex" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+    <button type="button" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Filter
+     </button>
+        <ul class="dropdown-menu">
+            <li><a href="#" class="dropdown-item">Price:Low - High</a></li>
+            <li><a href="#" class="dropdown-item">Price:High - Low</a></li>
+            <li><a href="#" class="dropdown-item">Points:Low - High</a></li>
+            <li><a href="#" class="dropdown-item">Points:High - Low</a></li>
+        </ul>
+   
+</div>
+
+
+
+<div class="container img-fluid img-thumbnail">
     <ul style="list-style-type:none;" class="row">
     @foreach(Product p in Model.Products)
     {
         <li class="col">
             <a href="@Url.Action("Details","Menu",new {id= p.ProductID})">
             <img src="@Url.Content(p.imgUrl)" alt="@p.Name" style="height:200px;width:200px"/>
-            <p>@p.Name</p>
-            <p>@String.Format("{0:F}", @p.Price)</p>
-            <p>Point:@p.LoyaltyPoints</p>
-            <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
             </a>
+            <p>@p.Name</p>
+                <div class="row">
+                    <div class="col">@String.Format("{0:c}", @p.Price)</div>
+                    @if (p.LoyaltyPoints != 0)
+                    {
+                        <div class="col">@p.LoyaltyPoints</div>
+                    }
+                </div>
+               
+                
+            <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
+            
         </li>
     }
     </ul>

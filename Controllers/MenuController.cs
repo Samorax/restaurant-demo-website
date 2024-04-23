@@ -63,7 +63,7 @@ namespace restaurant_demo_website.Controllers
                 CurrentCategory = "All"
             };
 
-            
+            ViewData["Currency"] = restaurantinfo.Currency;
             return View(ProductCategoryPage);
         }
 

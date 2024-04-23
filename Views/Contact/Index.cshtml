@@ -5,6 +5,7 @@
 }
 
 <div>
+    <h5>Restaurant Address</h5>
     <address>
         <p>@Model.BusinessAddress1</br>
         @Model.BusinessAddress2</br>
@@ -12,6 +13,22 @@
         @Model.PostalCode</br>
         @Model.Country</p>
     </address>
+
+    
+    <h5>Opening Times</h5>
+    <table>
+        <tbody>
+            @foreach (var n in Model.OpeningTimes)
+            {
+                <tr>
+                    <td>@n.Day</td>
+                    <td>@n.StartTime</td>
+                    <td>-</td>
+                    <td>@n.EndTime</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 
 <div id="map"></div>

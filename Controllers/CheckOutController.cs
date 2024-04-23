@@ -1,6 +1,7 @@
 ﻿using FoodloyaleApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using NuGet.Common;
 using restaurant_demo_website.Models;
 using restaurant_demo_website.Services;
@@ -14,11 +15,13 @@ namespace restaurant_demo_website.Controllers
     {
         private IEntitiesRequest _entitiesRequest;
         private ShoppingCart _shoppingCart;
+        private IMemoryCache _memoryCache;
 
-        public CheckoutController(IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart)
+        public CheckoutController(IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart,IMemoryCache memoryCache)
         {
             _entitiesRequest = entitiesRequest;
             _shoppingCart = shoppingCart;
+            _memoryCache = memoryCache;
         }
         
         const string PromoCode = "FREE";
@@ -28,10 +31,29 @@ namespace restaurant_demo_website.Controllers
         // GET: /Checkout/AddressAndPayment
         public async Task<ActionResult> OrderSummaryAsync()
         {
-           var viewModel = new ShoppingCartViewModel
+            ApplicationUser restaurantinfo = new ApplicationUser();
+            if (ShoppingCart.CartSessionKey != null)
+            {
+                if (!_memoryCache.TryGetValue(ShoppingCart.CartSessionKey, out ApplicationUser u))
+                {
+                    restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
+                    _memoryCache.Set(ShoppingCart.CartSessionKey, restaurantinfo);
+                }
+                else
+                {
+                    restaurantinfo = u;
+                }
+
+            }
+            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
+             
+            var cartTotal = await _shoppingCart.GetTotalAsync();
+            var viewModel = new ShoppingCartViewModel
             {
                 CartItems = await _shoppingCart.GetCartItemsAsync(),
-                CartTotal = await _shoppingCart.GetTotalAsync()
+                CartTotal = cartTotal,
+                DeliveryFee = restaurantinfo.DeliveryFee,
+                VAT = restaurantinfo.VATCharge * cartTotal
             }; 
             return View(viewModel);
         }
@@ -90,8 +112,9 @@ namespace restaurant_demo_website.Controllers
                     //var cart = ShoppingCart.GetCart(this.HttpContext);
                     var paymentToken = await _shoppingCart.CreateOrderAsync(orderAdded);
 
-                    //redirect to payment page
-                    return Redirect($"https://pay.dojo.tech/checkout/{paymentToken}");
+                //redirect to payment page
+                    var paymentUrl = string.Concat("https://pay.dojo.tech/checkout/", paymentToken);
+                    return Redirect(paymentUrl);
 
                     //return RedirectToAction("Complete",
                     //    new { id = orderAdded.OrderID });

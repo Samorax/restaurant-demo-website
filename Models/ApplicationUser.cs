@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using restaurant_demo_website.Models;
 
 namespace FoodloyaleApi.Models
 {
@@ -22,6 +23,8 @@ namespace FoodloyaleApi.Models
         public string State { get; set; }
        
         public string Country { get; set; }
+        public List<OpenTimes> OpeningTimes { get; set; }
+        public decimal DeliveryFee { get; set; }
 
         public string FirstName {get;set;}
         public string LastName {get;set;}
@@ -35,5 +38,6 @@ namespace FoodloyaleApi.Models
         public string ApiKey { get; set; }
         public string Currency { get; set; }
         public string MessagingServiceID { get; set; }
+        public decimal VATCharge { get; internal set; }
     }
 }
