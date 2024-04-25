@@ -127,5 +127,74 @@ namespace restaurant_demo_website.Controllers
             return View(ProductCategoryPage);
 
         }
+
+        public IActionResult MenuSearch(string menuName)
+        {
+            var delicacy = GetDelicacy(menuName);
+            return Json(delicacy);
+
+        }
+
+        public ActionResult QuickSearch(string term)
+        {
+            var quickSearch = products.Where(p=>p.Name.Contains(term)).Select(p=> new {value = p.Name});
+            return Json(quickSearch);
+        }
+
+        public IActionResult Filter(string filter)
+        {
+            var results = new List<Product>();
+            if (filter.Contains("Price"))
+            {
+                if (filter.Contains("Low - High"))
+                {
+                    results = products.OrderBy(p => p.Price).ToList();
+                }
+                else
+                    results = products.OrderByDescending(p => p.Price).ToList();
+                
+            }
+            if (filter.Contains("Points"))
+            {
+                if (filter.Equals("Low - High"))
+                {
+                    results = products.OrderBy(p => p.LoyaltyPoints).ToList();
+                }
+                else
+                    results = products.OrderByDescending(p => p.LoyaltyPoints).ToList();
+            }
+            var categories = new List<string>();
+            if (results.Any())
+            {
+
+                foreach (var p in results)
+                {
+                    p.imgUrl = GetImagesFromByteArray(p.photosUrl);
+
+                    categories.Add(p.Category);
+                }
+                categories = categories.Distinct().ToList();
+            }
+
+            var ProductCategoryPage = new ProductsCategoryViewModel
+            {
+                Products = results,
+                Categories = categories,
+                CurrentCategory = "All"
+            };
+            return View("Index", ProductCategoryPage);
+        }
+
+
+        private IEnumerable<Product> GetDelicacy(string menuName)
+        {
+            var ps = products.Where(p => p.Name.Contains(menuName)).ToList();
+            foreach (var p in ps)
+            {
+                p.imgUrl = GetImagesFromByteArray(p.photosUrl);
+            }
+
+            return ps;
+        }
     }
 }

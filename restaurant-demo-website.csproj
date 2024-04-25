@@ -18,11 +18,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.1" />
     <PackageReference Include="Microsoft.jQuery.Unobtrusive.Ajax" Version="3.2.6" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
+    <PackageReference Include="mustache.js" Version="0.7.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Views\Rewards\" />
-    <Folder Include="wwwroot\css\"/>
+    <Folder Include="wwwroot\css\" />
   </ItemGroup>
 
 </Project>

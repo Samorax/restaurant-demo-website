@@ -3,37 +3,23 @@
 @{
     ViewData["Title"] = "Menu";
 }
-<div class="nav justify-content-center">
-    <ul class="nav">
-        @foreach (var category in Model.Categories)
-        {
-
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="@Url.Action("Category","Menu",new{categoryName=category})">@category</a>
-            </li>
-
-        }
+<script id="menuTemplate" type="text/html">
+    <div class="container img-fluid img-thumbnail">
+    <ul style="list-style-type:none;" class="row">
+        {{#products}}
+        <li class="col">
+            <a href="/menu/details/{{productID}}">
+            <img src="{{imgUrl}}" style="height:200px;width:200px"/>
+            </a>
+            <p>{{name}}</p>
+        </li>
+        {{/products}}
     </ul>
-    <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-    </form>
-    <button type="button" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        Filter
-     </button>
-        <ul class="dropdown-menu">
-            <li><a href="#" class="dropdown-item">Price:Low - High</a></li>
-            <li><a href="#" class="dropdown-item">Price:High - Low</a></li>
-            <li><a href="#" class="dropdown-item">Points:Low - High</a></li>
-            <li><a href="#" class="dropdown-item">Points:High - Low</a></li>
-        </ul>
-   
-</div>
-
-
+    </div>
+</script>
 
 <div class="container img-fluid img-thumbnail">
-    <ul style="list-style-type:none;" class="row">
+    <ul style="list-style-type:none;" class="row" id="searchResults">
     @foreach(Product p in Model.Products)
     {
         <li class="col">
@@ -62,4 +48,5 @@
 <script src="~/lib/jquery/dist/jquery.js"></<script>
 <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
 <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/lib/mustache.js/mustache.js"></script>
 }

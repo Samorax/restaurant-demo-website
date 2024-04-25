@@ -5,6 +5,22 @@
     {
       "library": "jquery-ajax-unobtrusive@3.2.6",
       "destination": "wwwroot/lib/jquery-ajax-unobtrusive/"
+    },
+    {
+      "library": "mustache.js@4.2.0",
+      "destination": "wwwroot/lib/mustache.js/"
+    },
+    {
+      "library": "handlebars.js@4.7.8",
+      "destination": "wwwroot/lib/handlebars.js/"
+    },
+    {
+      "library": "jquery-autocomplete@1.0.7",
+      "destination": "wwwroot/lib/jquery-autocomplete/"
+    },
+    {
+      "library": "jqueryui@1.13.2",
+      "destination": "wwwroot/css/jqueryui/"
     }
   ]
 }

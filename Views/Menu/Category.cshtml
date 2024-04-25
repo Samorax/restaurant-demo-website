@@ -3,15 +3,6 @@
 @{
     ViewData["Title"] = "Menu";
 }
-<ul class="nav justify-content-center">
-    @foreach (var category in Model.Categories)
-    {
-
-        <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="@Url.Action("Category","Menu",new{categoryName=category})">@category</a>
-        </li>
-    }
-</ul>
 
 <div class="container img-fluid">
     <ul style="list-style-type:none;" class="row">
