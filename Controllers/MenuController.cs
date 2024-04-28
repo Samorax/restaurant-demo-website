@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using restaurant_demo_website.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using FoodloyaleApi.Models;
+using System.Globalization;
 
 namespace restaurant_demo_website.Controllers
 {
@@ -12,13 +13,15 @@ namespace restaurant_demo_website.Controllers
     {
         private readonly IEntitiesRequest _entitiesRequest;
         private IMemoryCache _memoryCache;
+        private IGetCultureName _getCultureName;
 
         private static IEnumerable<Product> products { get; set; }
 
-        public MenuController(IEntitiesRequest entitiesRequest, IMemoryCache memoryCache)
+        public MenuController(IEntitiesRequest entitiesRequest, IMemoryCache memoryCache, IGetCultureName getCultureName)
         {
             _entitiesRequest = entitiesRequest;
             _memoryCache = memoryCache;
+            _getCultureName = getCultureName;
         }
 
         
@@ -27,6 +30,41 @@ namespace restaurant_demo_website.Controllers
         /// </summary>
         /// <returns></returns>
         public async Task<IActionResult> IndexAsync()
+        {
+            ApplicationUser restaurantinfo = await GetCache();
+            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
+            products = await _entitiesRequest.GetProductsAsync();
+
+            var dayopentimes = restaurantinfo.OpeningTimes.FirstOrDefault(o => o.Day == DateTime.Now.DayOfWeek.ToString());
+            var opened = AffirmOnlineShopping(dayopentimes.StartTime, dayopentimes.EndTime);
+            var cultureName = _getCultureName.GetName(restaurantinfo.Country);
+
+            List<string> categories = new List<string>();
+
+            if (products.Any())
+            {
+                foreach (var p in products)
+                {
+                    p.imgUrl = GetImagesFromByteArray(p.photosUrl);
+                    categories.Add(p.Category);
+                }
+                categories = categories.Distinct().ToList();
+            }
+
+            var ProductCategoryPage = new ProductsCategoryViewModel
+            {
+                Products = products,
+                Categories = categories,
+                CurrentCategory = "All",
+                ShopOpened = opened,
+                CultureName = cultureName
+            };
+
+            ViewData["Currency"] = restaurantinfo.Currency;
+            return View(ProductCategoryPage);
+        }
+
+        private async Task<ApplicationUser> GetCache()
         {
             ApplicationUser restaurantinfo = new ApplicationUser();
             if (ShoppingCart.CartSessionKey != null)
@@ -42,29 +80,8 @@ namespace restaurant_demo_website.Controllers
                 }
 
             }
-            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
-            products = await _entitiesRequest.GetProductsAsync();
-            List<string> categories = new List<string>();
 
-                if (products.Any())
-                {
-                    foreach (var p in products)
-                    {
-                        p.imgUrl = GetImagesFromByteArray(p.photosUrl);
-                        categories.Add(p.Category);
-                    }
-                    categories = categories.Distinct().ToList();
-                }
-
-            var ProductCategoryPage = new ProductsCategoryViewModel
-            {
-                Products = products,
-                Categories = categories,
-                CurrentCategory = "All"
-            };
-
-            ViewData["Currency"] = restaurantinfo.Currency;
-            return View(ProductCategoryPage);
+            return restaurantinfo;
         }
 
         //images are stored in the database as byte. Convert them to base64 string.
@@ -76,6 +93,12 @@ namespace restaurant_demo_website.Controllers
         }
 
 
+        /// <summary>
+        /// Displays the details of a chosen product and also shows recommended products on a side view.
+        /// Recommedations are based on machine learning SRA algorithm.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IActionResult> DetailsAsync(int id)
         {
             products = await _entitiesRequest.GetProductsAsync();
@@ -85,14 +108,42 @@ namespace restaurant_demo_website.Controllers
             {
                 product.DiffAllergen = product.Allergens.Split(",");
             }
-                    
-              
+
+
             if (product == null)
                 return View("Error");
-            return View(product);
+            Product[] r = GetRecommendations();
+
+            var menuDetailView = new MenuDetailsViewModel { ProductInView = product, Recommendations = r.ToList() };
+            return View(menuDetailView);
         }
 
-        
+        private bool AffirmOnlineShopping(string starttime, string endtime)
+        {
+            var nowTime = DateTime.Now.TimeOfDay;
+            var start = DateTime.ParseExact(starttime, "hh:mm tt", CultureInfo.InvariantCulture);
+            var end = DateTime.ParseExact(endtime, "h:mm tt", CultureInfo.InvariantCulture);
+
+            //if current time is greater than start time, returns 1
+            //if current time is less than end time, returns -1
+            var r1 = TimeSpan.Compare(nowTime, start.TimeOfDay);
+            var r2 = TimeSpan.Compare(nowTime, end.TimeOfDay);
+            bool possible = r1 == 1  || r2 == -1 ? false : true;
+            return possible;
+        }
+
+        private Product[] GetRecommendations()
+        {
+            var rnd = new Random();
+            var r = rnd.GetItems(products.ToArray(), 5);
+            foreach (var product in r)
+            {
+                product.imgUrl = GetImagesFromByteArray(product.photosUrl);
+            }
+            return r;
+        }
+
+
 
         /// <summary>
         /// Gets the list of products for a category

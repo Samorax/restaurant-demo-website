@@ -40,6 +40,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<IEntitiesRequest, EntitiesRequest>();
+builder.Services.AddScoped<IMapService, MapService>();
+builder.Services.AddScoped<IGetCultureName, GetCultureName>();
+
 builder.Services.AddScoped<ShoppingCart>();
 builder.Services.AddMemoryCache();
 var app = builder.Build();

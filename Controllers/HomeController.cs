@@ -16,12 +16,13 @@ namespace restaurant_demo_website.Controllers
         private readonly ILogger<HomeController> _logger;
         private IEntitiesRequest _entitiesRequest;
         private IMemoryCache _memoryCache;
-        
+        private IMapService _mapService;
 
-        public HomeController(IEntitiesRequest entitiesRequest, IMemoryCache memoryCache)
+        public HomeController(IEntitiesRequest entitiesRequest, IMemoryCache memoryCache, IMapService mapService)
         {
             _entitiesRequest = entitiesRequest;
             _memoryCache = memoryCache;
+            _mapService = mapService;
         }
 
         public async Task<IActionResult> IndexAsync()
@@ -40,6 +41,27 @@ namespace restaurant_demo_website.Controllers
             }
             ViewData["RestaurantName"] = restaurantinfo.BusinessName;
             return View(restaurantinfo);
+        }
+
+        /// <summary>
+        /// This method affirms the possibilty of delivery to Customer's location.
+        /// Gets the affirmation by the difference between the chosen delivery mileage by the restaurant and a Calculated mileage
+        /// Calculated mileage is done using BingMapsRestToolkit
+        /// </summary>
+        /// <param name="deliveryPostcode"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> AffirmDeliveryPossibilityAsync(string deliveryPostcode)
+        {
+            var Message = string.Empty;
+            var info = _memoryCache.Get(ShoppingCart.CartSessionKey) as ApplicationUser;
+            var distance = await _mapService.GetDistance(info.PostalCode, deliveryPostcode);
+            if (distance > info.DeliveryDistance)
+                Message = "Good News!! We deliver to your location";
+            else
+                Message = "Sorry!! We do not deliver to your location";
+
+            return Json(Message);
+
         }
 
 

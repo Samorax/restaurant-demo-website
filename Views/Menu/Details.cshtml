@@ -1,26 +1,26 @@
-@model restaurant_demo_website.Models.Product
+@model restaurant_demo_website.ViewModels.MenuDetailsViewModel
 @{
-    ViewData["Title"] = Model.Name;
+    ViewData["Title"] = Model.ProductInView.Name;
 }
 <div class="card mb-3" style="max-width: 600px;">
     <div class="row g-0">
         <div class="col-md-6">
-            <img src="@Url.Content(Model.imgUrl)" class="img-thumbnail img-fluid rounded-start" alt="image_of_delicacy">
+            <img src="@Url.Content(Model.ProductInView.imgUrl)" class="img-thumbnail img-fluid rounded-start" alt="image_of_delicacy">
         </div>
         <div class="col-md-6">
             <div class="card-body">
-                <h5 class="card-title">@Model.Name</h5>
+                <h5 class="card-title">@Model.ProductInView.Name</h5>
                 
-                <p class="card-text">Price: @String.Format("{0:c}", Model.Price)</p>
-                <p class="card-text">Category: @Model.Category</p>
-                <p class="card-text">Code:@Model.Code</p>
-                <p class="card-text">Points: @Model.LoyaltyPoints</p>
-                <p class="card-text">Description:@Model.Description</p>
-                    @if (Model.DiffAllergen != null)
+                <p class="card-text">Price: @String.Format("{0:c}", Model.ProductInView.Price)</p>
+                <p class="card-text">Category: @Model.ProductInView.Category</p>
+                <p class="card-text">Code:@Model.ProductInView.Code</p>
+                <p class="card-text">Points: @Model.ProductInView.LoyaltyPoints</p>
+                <p class="card-text">Description:@Model.ProductInView.Description</p>
+                    @if (Model.ProductInView.DiffAllergen != null)
                     {
                         <p>Allergens:
                     <ul>
-                            @foreach (var allergen in Model.DiffAllergen)
+                            @foreach (var allergen in Model.ProductInView.DiffAllergen)
                             {
                             <span class="badge rounded-pill text-black bg-primary">@allergen</span>
                             }
@@ -28,16 +28,38 @@
                     </p>
                     }
                 
-                <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@Model.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
+                <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@Model.ProductInView.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
             </div>
         </div>
     </div>
 </div>
 
+<div>
+    @foreach(var p in Model.Recommendations)
+    {
+        <li class="col">
+            <a href="@Url.Action("Details","Menu",new {id= p.ProductID})">
+                <img src="@Url.Content(p.imgUrl)" alt="@p.Name" style="height:200px;width:200px" />
+            </a>
+            <p>@p.Name</p>
+            <div class="row">
+                <div class="col">@String.Format("{0:c}", @p.Price)</div>
+                @if (p.LoyaltyPoints != 0)
+                {
+                    <div class="col">@p.LoyaltyPoints</div>
+                }
+            </div>
+
+
+            <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
+
+        </li>
+    }
+</div>
+
 
 @section scripts {
-    <script src="~/lib/jquery/dist/jquery.js">
-        </<script>
-        <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
     <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
 }

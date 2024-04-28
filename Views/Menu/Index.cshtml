@@ -1,5 +1,5 @@
 @model restaurant_demo_website.ViewModels.ProductsCategoryViewModel
-
+@using System.Globalization;
 @{
     ViewData["Title"] = "Menu";
 }
@@ -28,15 +28,21 @@
             </a>
             <p>@p.Name</p>
                 <div class="row">
-                    <div class="col">@String.Format("{0:c}", @p.Price)</div>
+                    <div class="col">@String.Format(new CultureInfo(Model.CultureName), "{0:c}", @p.Price)</div>
                     @if (p.LoyaltyPoints != 0)
                     {
                         <div class="col">@p.LoyaltyPoints</div>
                     }
                 </div>
                
+                @if (!Model.ShopOpened)
+                {
+                    <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID" style="pointer-events:none;" tabindex="-1" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
+                }
+                else{
+                    <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID"  data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
+                }    
                 
-            <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
             
         </li>
     }
