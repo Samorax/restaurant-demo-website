@@ -1,11 +1,16 @@
 ﻿@model restaurant_demo_website.ViewModels.ShoppingCartViewModel
     @using restaurant_demo_website.ViewModels
+    @using System.Globalization;
 <div class="row">
-    <div class="col-md-5">
+    <div class="col-md-4">
        @await Html.PartialAsync("_AddressAndPaymentPartial", new AddressandPaymentViewModel())
           @* <partial name="_AddressAndPaymentPartial"/> *@
     </div>
+
     <div class="col-md-4">
+        <h3>
+            <em>Order Summary</em>
+        </h3>
         <table class="table">
             <tbody id="orderSummary">
                 <tr>
@@ -21,7 +26,7 @@
                                 @item.Name
                             </td>
                             <td>
-                                @item.Price
+                            @String.Format("{0:c}", @item.Price)
                             </td>
                             <td id="item-count-@item.RecordId">
                                 @item.Count
@@ -30,24 +35,23 @@
                     }
                     <tr>
                         <td>Delivery Fee</td>
-                        <td></td>
-                        <td>@Model.DeliveryFee</td>
+                        
+                        <td>@String.Format("{0:c}",Model.DeliveryFee)</td>
                     </tr>
                     <tr>
                         <td>VAT</td>
-                        <td></td>
-                        <td>@Model.VAT</td>
+
+                    <td>@String.Format("{0:c}",Model.VAT)</td>
                     </tr>
             </tbody>
             <tfoot>
                         <td>
                             Total
                         </td>
-                        <td>
-                        </td>
+                        
                        
                         <td id="cart-total">
-                            @Model.CartTotal
+                            @String.Format("{0:c}",Model.CartTotal)
                         </td>
                     </tfoot>
    

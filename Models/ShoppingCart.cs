@@ -1,12 +1,5 @@
 ﻿using FoodloyaleApi.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Http;
-using Newtonsoft.Json;
-using NuGet.Packaging.Signing;
-using restaurant_demo_website.Extensions;
 using restaurant_demo_website.Services;
-using SQLitePCL;
-using System.Net.Http;
 
 
 namespace restaurant_demo_website.Models
@@ -23,7 +16,7 @@ namespace restaurant_demo_website.Models
 
         public static string ShoppingCartId { get; set; }
         
-        public static IEnumerable<CartOrder> Carts { get; set; }
+        public  IEnumerable<CartOrder> Carts { get; set; }
         
         public const string CartSessionKey = "CartId";
 
@@ -41,35 +34,24 @@ namespace restaurant_demo_website.Models
         public async Task AddToCart(Product product)
         {
             // Get the matching cart and album instances
-            CartOrder cartItem;
             
             Carts = await _entitiesRequest.GetCartOrdersAsync();
-            if(Carts.Any())
-            {
-                cartItem = Carts.FirstOrDefault(c => c.CartOrderId == ShoppingCartId && c.Name == product.Name);
-
-                if (cartItem == null)
-                {
-                    // Create a new cart item if no cart item exists
-                    cartItem = new CartOrder
-                    {
-                        Name = product.Name,
-                        CartOrderId = ShoppingCartId,
-                        Count = 1,
-                        DateCreated = DateTime.Now,
-                        Price = product.Price
-                    };
-                await _entitiesRequest.AddCartOrderAsync(cartItem);
-                }
-                else
+            
+            
+                var cartItem = Carts.FirstOrDefault(c => c.CartOrderId == ShoppingCartId && c.Name == product.Name);
+               
+                if (cartItem != null)
                 {
                     // If the item does exist in the cart, 
                     // then add one to the quantity
                     cartItem.Count++;
                     await _entitiesRequest.UpdateCartOrderAsync(cartItem);
+
                 }
-                }else{
-                    cartItem = new CartOrder
+                else
+                {
+                    // Create a new cart item if no cart item exists
+                    var newcartItem = new CartOrder
                     {
                         Name = product.Name,
                         CartOrderId = ShoppingCartId,
@@ -77,8 +59,13 @@ namespace restaurant_demo_website.Models
                         DateCreated = DateTime.Now,
                         Price = product.Price
                     };
-                    await _entitiesRequest.AddCartOrderAsync(cartItem);
+
+                    await _entitiesRequest.AddCartOrderAsync(newcartItem);
+               
                 }
+
+            
+            
         }
 
         
@@ -93,8 +80,10 @@ namespace restaurant_demo_website.Models
             {
                 if (cartItem.Count > 1)
                 {
-                    cartItem.Count--;
-                    itemCount = cartItem.Count;
+                   cartItem.Count--;
+                    await _entitiesRequest.UpdateCartOrderAsync(cartItem);
+                    var currentCount = cartItem.Count;
+                    itemCount = currentCount;
                 }
                 else
                 {
@@ -183,7 +172,6 @@ namespace restaurant_demo_website.Models
 
             // Save the order
             await _entitiesRequest.UpdateOrderAsync(order);
-            await _entitiesRequest.PostOrderToQueue(order);
             // Empty the shopping cart
             await EmptyCartAsync();
             // Return the OrderId as the confirmation number

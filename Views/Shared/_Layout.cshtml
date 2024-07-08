@@ -10,7 +10,7 @@
     <link href="~/css/jqueryui/themes/base/jquery-ui.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/restaurant_demo_website.styles.css" asp-append-version="true" />
     <script src="https://kit.fontawesome.com/c5ec4336d3.js" crossorigin="anonymous"></script>
-    <script src="~/lib/mustache/mustache.js"></script>
+ 
 
 </head>
 <body>
@@ -35,8 +35,9 @@
                         </li>
                     </ul>
                     <ul class="nav justify-content-end">
-                        <form class="d-flex" role="search">
-                            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                        <form class="d-flex" role="search" data-ajax="true" action="@Url.Action("AffirmDeliveryPossibility","Home")" id="deliverySearch">
+                            <label>Do we deliver to your location?</label>
+                            <input class="form-control me-2" type="search" placeholder="Enter Your PostCode" aria-label="Search" name="deliveryPostcode">
                             <button class="btn btn-outline-success" type="submit">Search</button>
                         </form>
                         <li class="nav-item">
@@ -53,7 +54,7 @@
                 
             </div>
         </nav>
-        @if (ViewContext.RouteData.Values.Keys.Contains("controller") && ViewContext.RouteData.Values["controller"].ToString() == "Menu")
+        @if (ViewContext.RouteData.Values.Keys.Contains("controller") && ViewContext.RouteData.Values["controller"].ToString() == "Menu" && ViewContext.RouteData.Values["action"].ToString() != "Details")
         {
             <div class="nav justify-content-center">
                 <ul class="nav">
@@ -87,11 +88,14 @@
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
+        
     </div>
-
+   @*  <div id="dialog" title="Basic dialog">
+        <p id="deliveryMessage">This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+    </div> *@
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2024 - restaurant_demo_website - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2024 - @ViewData["RestaurantName"] - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";
@@ -116,10 +120,23 @@
             })
         });
 
+        $("#deliverySearch").submit(function (event) {
+            event.preventDefault();
+
+            var form = $(this);
+            $.getJSON(form.attr("action"), form.serialize(), function (data) {
+                $("#deliveryMessage").empty().append(data)
+                $("#dialog").dialog("open");
+                
+            })
+        });
+
         $("input[data-autocomplete-source]").each(function () {
             var target = $(this);
             target.autocomplete({ source: target.attr("data-autocomplete-source")})
         })
+
+        
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

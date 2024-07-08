@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using restaurant_demo_website.Models;
 using restaurant_demo_website.Services;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace restaurant_demo_website.Controllers
@@ -70,10 +71,18 @@ namespace restaurant_demo_website.Controllers
             return View();
         }
 
+        [Route("/Error")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            if(Problem().StatusCode == 500)
+            {
+                ViewData["ServerError"] = "It appears there is an error from the backend: please ensure you are using an API Key";          
+            }
+
+            return View();
+
+            //return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

@@ -8,7 +8,7 @@ namespace restaurant_demo_website.Services
     {
         public Task<IEnumerable<Product>> GetProductsAsync();
         public Task<IEnumerable<CartOrder>> GetCartOrdersAsync();
-        public Task<CartOrder> AddCartOrderAsync(CartOrder cartOrder);
+        public Task AddCartOrderAsync(CartOrder cartOrder);
 
         public Task UpdateCartOrderAsync(CartOrder cartOrder);
         public Task DeleteCartOrderAsync(CartOrder cartOrder);

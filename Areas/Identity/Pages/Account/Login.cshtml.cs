@@ -18,19 +18,21 @@ using restaurant_demo_website.Models;
 using restaurant_demo_website.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using FoodloyaleApi.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace restaurant_demo_website.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        
+        private readonly IMemoryCache _memoryCache;
         private readonly ILogger<LoginModel> _logger;
         private readonly IEntitiesRequest _entitiesRequest;
         private readonly ShoppingCart _shoppingCart;
 
-        public LoginModel( ILogger<LoginModel> logger, IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart)
+        public LoginModel( ILogger<LoginModel> logger, IMemoryCache memoryCache, IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart)
         {
-            
+            _memoryCache = memoryCache;
             _logger = logger;
             _entitiesRequest = entitiesRequest;
             _shoppingCart = shoppingCart;
@@ -108,6 +110,21 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
             //ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             ReturnUrl = returnUrl;
+            ApplicationUser restaurantinfo = null;
+            if (ShoppingCart.CartSessionKey != null)
+            {
+                if (!_memoryCache.TryGetValue(ShoppingCart.CartSessionKey, out ApplicationUser u))
+                {
+                    restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
+                    _memoryCache.Set(ShoppingCart.CartSessionKey, restaurantinfo);
+                }
+                else
+                {
+                    restaurantinfo = u;
+                }
+
+            }
+            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
         }
         private async Task MigrateShoppingCartAsync(string UserName)
         {

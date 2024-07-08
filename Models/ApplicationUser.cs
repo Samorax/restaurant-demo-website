@@ -38,7 +38,7 @@ namespace FoodloyaleApi.Models
         public string ApiKey { get; set; }
         public string Currency { get; set; }
         public string MessagingServiceID { get; set; }
-        public decimal VATCharge { get; internal set; }
-        public double DeliveryDistance { get; internal set; }
+        public decimal VATCharge { get; set; }
+        public double DeliveryDistance { get; set; }
     }
 }

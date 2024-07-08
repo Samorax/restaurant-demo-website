@@ -1,37 +1,52 @@
-﻿@model FoodloyaleApi.Models.ApplicationUser;
+﻿@model restaurant_demo_website.ViewModels.ContactViewModel;
 @{
     ViewData["Title"] = "Contact Us";
 
 }
 
-<div>
-    <h5>Restaurant Address</h5>
-    <address>
-        <p>@Model.BusinessAddress1</br>
-        @Model.BusinessAddress2</br>
-        @Model.State</br>
-        @Model.PostalCode</br>
-        @Model.Country</p>
-    </address>
+<div class="row">
+    <div class="col-md-4">
+        <h5>Restaurant Address</h5>
+        <address>
+            <p>
+                @Model.info.BusinessAddress1</br>
+                @Model.info.BusinessAddress2</br>
+                @Model.info.State</br>
+                @Model.info.PostalCode</br>
+                @Model.info.Country
+            </p>
+        </address>
 
-    
-    <h5>Opening Times</h5>
-    <table>
-        <tbody>
-            @foreach (var n in Model.OpeningTimes)
-            {
-                <tr>
-                    <td>@n.Day</td>
-                    <td>@n.StartTime</td>
-                    <td>-</td>
-                    <td>@n.EndTime</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+        <h5>Opening Times</h5>
+        @if (!Model.info.OpeningTimes.Any())
+        {
+            <h6>There are no Operating Hours here!! Make sure you have completed the Operating hours section in the POS.</h6>
+        }
+        else
+        {
+            <table>
+                <tbody>
+                    @foreach (var n in Model.info.OpeningTimes)
+                    {
+                        <tr>
+                            <td>@n.Day</td>
+                            <td>@n.StartTime</td>
+                            <td>-</td>
+                            <td>@n.EndTime</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+       
+    </div>
+    <div id="map" class="col-md-6 col-md-offset-2">
+        <img src="@Url.Content("~/Images/AddressImage.png")" alt="map-Image"/>
+    </div>
 </div>
 
-<div id="map"></div>
+
 
 @section scripts{
     

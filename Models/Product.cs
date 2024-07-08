@@ -13,6 +13,7 @@
 
         public int LoyaltyPoints {get;set;}
 
+        public bool IsDeleted {get;set;}
         public string Allergens { get; set; }
         public string[] DiffAllergen { get; set; }
 

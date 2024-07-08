@@ -4,11 +4,13 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using FoodloyaleApi.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Caching.Memory;
 using restaurant_demo_website.Extensions;
 using restaurant_demo_website.Models;
 using restaurant_demo_website.Services;
@@ -19,17 +21,18 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
     {
         
         private readonly ILogger<RegisterModel> _logger;
-        
+        private IMemoryCache _memoryCache;
         private IEntitiesRequest _entitiesRequest;
         private ShoppingCart _shoppingCart;
 
         public RegisterModel(
             IEntitiesRequest entitiesRequest,
-          
+            IMemoryCache memoryCache,
             ILogger<RegisterModel> logger, ShoppingCart shoppingCart)
         {
            
             _logger = logger;
+            _memoryCache = memoryCache;
             _entitiesRequest = entitiesRequest;
             _shoppingCart = shoppingCart;
         }
@@ -106,6 +109,21 @@ namespace restaurant_demo_website.Areas.Identity.Pages.Account
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
+            ApplicationUser restaurantinfo = null;
+            if (ShoppingCart.CartSessionKey != null)
+            {
+                if (!_memoryCache.TryGetValue(ShoppingCart.CartSessionKey, out ApplicationUser u))
+                {
+                    restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
+                    _memoryCache.Set(ShoppingCart.CartSessionKey, restaurantinfo);
+                }
+                else
+                {
+                    restaurantinfo = u;
+                }
+
+            }
+            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
             //ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 

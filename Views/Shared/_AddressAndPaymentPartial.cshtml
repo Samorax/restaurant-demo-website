@@ -1,9 +1,12 @@
 ﻿@model restaurant_demo_website.ViewModels.AddressandPaymentViewModel
 
+<h3>
+    <em>Delivery Address</em>
+</h3>
         <form asp-action="AddressAndPayment" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-8">
                     <div class="form-group">
                         <label asp-for="FirstName" class="control-label"></label>
                         <input asp-for="FirstName" class="form-control" />

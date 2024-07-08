@@ -35,16 +35,9 @@ namespace restaurant_demo_website.Controllers
             ApplicationUser restaurantinfo = new ApplicationUser();
             if (ShoppingCart.CartSessionKey != null)
             {
-                if (!_memoryCache.TryGetValue(ShoppingCart.CartSessionKey, out ApplicationUser u))
-                {
-                    restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
-                    _memoryCache.Set(ShoppingCart.CartSessionKey, restaurantinfo);
-                }
-                else
-                {
-                    restaurantinfo = u;
-                }
-
+                
+                restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
+              
             }
             ViewData["RestaurantName"] = restaurantinfo.BusinessName;
              
@@ -52,9 +45,9 @@ namespace restaurant_demo_website.Controllers
             var viewModel = new ShoppingCartViewModel
             {
                 CartItems = await _shoppingCart.GetCartItemsAsync(),
-                CartTotal = cartTotal,
+                CartTotal = cartTotal + restaurantinfo.DeliveryFee + ((restaurantinfo.VATCharge /100) * cartTotal),
                 DeliveryFee = restaurantinfo.DeliveryFee,
-                VAT = restaurantinfo.VATCharge * cartTotal
+                VAT = (restaurantinfo.VATCharge / 100) * cartTotal
             }; 
             return View(viewModel);
         }
@@ -97,8 +90,7 @@ namespace restaurant_demo_website.Controllers
 
             try
             {
-                var deliveryAddress = values["FirstLineAddress"] + values["SecondLineAddress"] + values["City"] +
-                    values["State"] + values["Country"] + values["PostalCode"];
+                var deliveryAddress = string.Concat(values["FirstLineAddress"]," ",values["SecondLineAddress"]," ",values["City"]," ",values["State"]," ",values["Country"]," ",values["PostalCode"]);
                     order.Username = User.Identity.Name;
                     order.OrderDate = DateTime.Now;
                     order.Channel = "Website";
@@ -133,12 +125,14 @@ namespace restaurant_demo_website.Controllers
         {
             // Validate customer owns this order
             var orders = await _entitiesRequest.GetOrdersAsync();
-            bool isValid = orders.Any(
+            Order order = orders.SingleOrDefault(
                 o => o.OrderID == id &&
                 o.Username == User.Identity.Name);
 
-            if (isValid)
+            if (order != null)
             {
+
+                await _entitiesRequest.PostOrderToQueue(order);
                 return View(id);
             }
             else

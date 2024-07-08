@@ -29,10 +29,10 @@ namespace restaurant_demo_website.Services
 
         }
   
-        public async Task<CartOrder> AddCartOrderAsync(CartOrder cartOrder)
+        public async Task AddCartOrderAsync(CartOrder cartOrder)
         {
             var response = await _httpClient.PostAsJsonAsync("/api/cartOrders",cartOrder);
-            return JsonConvert.DeserializeObject<CartOrder>(await response.Content.ReadAsStringAsync());
+            response.EnsureSuccessStatusCode();
          
         }
 

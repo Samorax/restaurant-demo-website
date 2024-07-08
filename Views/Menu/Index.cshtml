@@ -18,41 +18,61 @@
     </div>
 </script>
 
-<div class="container img-fluid img-thumbnail">
-    <ul style="list-style-type:none;" class="row" id="searchResults">
-    @foreach(Product p in Model.Products)
-    {
-        <li class="col">
-            <a href="@Url.Action("Details","Menu",new {id= p.ProductID})">
-            <img src="@Url.Content(p.imgUrl)" alt="@p.Name" style="height:200px;width:200px"/>
-            </a>
-            <p>@p.Name</p>
-                <div class="row">
-                    <div class="col">@String.Format(new CultureInfo(Model.CultureName), "{0:c}", @p.Price)</div>
-                    @if (p.LoyaltyPoints != 0)
-                    {
-                        <div class="col">@p.LoyaltyPoints</div>
-                    }
-                </div>
-               
-                @if (!Model.ShopOpened)
-                {
-                    <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID" style="pointer-events:none;" tabindex="-1" data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
-                }
-                else{
-                    <a data-ajax="true" data-ajax-url="/shoppingcart/addtocart/@p.ProductID"  data-ajax-update="#cartCount" class="btn btn-primary">Add to Cart</a>
-                }    
-                
-            
-        </li>
-    }
+@if (!Model.Products.Any())
+{
+    <h4>You do not have Delicacies here. Make sure you have uploaded them in the POS.</h4>
+}
+else
+{
+    <div class="container img-fluid img-thumbnail">
+        <ul style="list-style-type:none;" class="row" id="searchResults">
+            @foreach (Product p in Model.Products)
+            {
+                <li class="col">
+                    <a href="@Url.Action("Details","Menu",new {id= p.ProductID})">
+                        <img src="@Url.Content(p.imgUrl)" alt="@p.Name" style="height:200px;width:200px" />
+                    </a>
+                    <p>@p.Name</p>
+                    <div class="row">
+                        <div class="col-sm-3">@String.Format("{0:c}", @p.Price)</div>
+                        @if (p.LoyaltyPoints != 0)
+                        {
+                            <div class="col-sm-2">@p.LoyaltyPoints pts</div>
+                        }
+                    </div>
+
+                     <button data-url="/shoppingcart/addtocart/@p.ProductID" class="btn btn-primary addtocart">Add to Cart</button>
+                    
+                   
+
+
+                </li>
+            }
     </ul>
 </div>
+}
+
 
 
 @section scripts{
-<script src="~/lib/jquery/dist/jquery.js"></<script>
-<script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+    <script>
+        $('.addtocart').each(function (index) {
+            $(this).click(function () {
+                var urlValue = $(this).attr('data-url');
+                $.ajax({
+                    url:urlValue,
+                    method:'GET',
+                    success: function (data) {
+                        $('#cartCount').html(data)
+                    }
+                })
+            })
+        })
+        
+       
+        
+    </script>
+
 <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
-    <script src="~/lib/mustache.js/mustache.js"></script>
+<script src="~/css/jqueryui/jquery-ui.min.js"></script>
 }

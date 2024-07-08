@@ -29,7 +29,8 @@ namespace restaurant_demo_website.Controllers
             var viewModel = new ShoppingCartViewModel
             {
                 CartItems = await _shoppingCart.GetCartItemsAsync(),
-                CartTotal = await _shoppingCart.GetTotalAsync()
+                CartTotal = await _shoppingCart.GetTotalAsync(),
+                CultureName = "en-GB"
             };
             // Return the view
             return View(viewModel);
@@ -43,17 +44,19 @@ namespace restaurant_demo_website.Controllers
             if(products.Any())
             {
                 var addedProduct = products.FirstOrDefault(p => p.ProductID == id);
-            // Add it to the shopping cart
-            if(ShoppingCart.ShoppingCartId == null){
-                _shoppingCart.GetCart(this.HttpContext);
-            }
+                // Add it to the shopping cart
+                if(ShoppingCart.ShoppingCartId == null){
+                    _shoppingCart.GetCart(this.HttpContext);
+                }
                 
                 await _shoppingCart.AddToCart(addedProduct);
+                
             }
-            
+
 
             // Go back to the main store page for more shopping
-            return Json(await _shoppingCart.GetCountAsync());
+            var count = await _shoppingCart.GetCountAsync();
+            return Json(count);
         }
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5

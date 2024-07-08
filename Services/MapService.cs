@@ -1,19 +1,28 @@
 
 using BingMapsRESTToolkit;
+using System.Drawing;
+using System.Drawing.Imaging;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
+
+
+
+
 
 namespace restaurant_demo_website.Services
 {
     public class MapService : IMapService
     {
-        public MapService(IConfiguration configuration)
+        public MapService(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
         {
             _configuration = configuration;
+            _hostingEnvironment = hostingEnvironment;
             key = _configuration.GetSection("BingMapApiKey").Value;
         }
 
 
         private string key {get;set;} 
         private IConfiguration _configuration;
+        private IHostingEnvironment _hostingEnvironment;
 
         public async Task<double> GetDistance(string originPostcode, string destPostcode)
         {
@@ -65,6 +74,57 @@ namespace restaurant_demo_website.Services
             return k.Results.First().TravelDistance;
         }
 
-      
+        public async Task GetAddressImage(string addressline, string locality, string postcode, string country)
+        {
+            var imgSource = string.Empty;
+            var o = new GeocodeRequest
+            {
+                BingMapsKey = key,
+                Address = new SimpleAddress
+                {
+                    AddressLine = addressline,
+                    Locality = locality,
+                    PostalCode = postcode,
+                    CountryRegion = country
+                }
+            };
+            var d = await o.Execute();
+            var location = d.ResourceSets[0].Resources[0] as BingMapsRESTToolkit.Location;
+            var longitude = location.GeocodePoints.First().Coordinates[0];
+            var latitude = location.GeocodePoints.First().Coordinates[1];
+            await GetMapImage(longitude, latitude);
+
+        }
+
+        private async Task GetMapImage(double longitude, double latitude)
+        {
+            var request = new ImageryRequest
+            {
+                BingMapsKey = key,
+                MapHeight = 500,
+                MapWidth = 800,
+                CenterPoint = new Coordinate(longitude, latitude),
+                ZoomLevel = 16,
+                ImagerySet = ImageryType.CanvasLight,
+                Format = ImageFormatType.PNG,
+                Pushpins = new List<ImageryPushpin>(){
+                new ImageryPushpin(){
+                    Location = new Coordinate(longitude, latitude),
+                    Label = "hi"
+                } },
+                HighlightEntity = true
+
+
+            };
+
+            using (var imageStream = await ServiceManager.GetImageAsync(request))
+            {
+                var img = Image.FromStream(imageStream);
+                var basepath = _hostingEnvironment.WebRootPath;
+                var imgSource = Path.Combine(basepath, "Images\\AddressImage.png");
+                img.Save(imgSource, ImageFormat.Png);
+
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿@model restaurant_demo_website.ViewModels.ShoppingCartViewModel
+@using System.Globalization;
 @{
     ViewBag.Title = "Shopping Cart";
 }
@@ -32,14 +33,14 @@ Model.CartItems)
                 @item.Name
             </td>
             <td>
-                @item.Price
+                @String.Format("{0:c}",  @item.Price)
             </td>
             <td id="item-count-@item.RecordId">
                 @item.Count
             </td>
             <td>
-                <a href="" data-ajax="true" class="RemoveLink"  data-ajax-url="/ShoppingCart/RemoveFromCart/@item.RecordId" data-ajax-complete="Completed">
-                Remove from cart</a>
+                <button class="RemoveLink"  data-url="/ShoppingCart/RemoveFromCart/@item.RecordId">
+                Remove from cart</button>
             </td>
         </tr>
     }
@@ -52,7 +53,7 @@ Model.CartItems)
         <td>
         </td>
         <td id="cart-total">
-            @Model.CartTotal
+            @String.Format("{0:c}",Model.CartTotal)
         </td>
     </tr>
 </table>
@@ -62,8 +63,16 @@ Model.CartItems)
 <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
 <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
 <script type="text/javascript">
-    Completed = function (data) {
-                        var d = data.responseJSON;
+
+    $('.RemoveLink').each(function (index) {
+        $(this).click(function () {
+            var urlValue = $(this).attr('data-url');
+            $.ajax({
+                url: urlValue,
+                method:'GET',
+                success: function (data) {
+                        var d = data;
+                        console.log(d)
                         // Successful requests get here
                         // Update the page elements
                         if (d.itemCount == 0) {
@@ -71,9 +80,14 @@ Model.CartItems)
                         } else {
                             $('#item-count-' + d.deleteId).text(d.itemCount);
                         }
-                        $('#cart-total').text(d.cartTotal);
+                        $('#cart-total').html(d.cartTotal);
                         $('#update-message').text(d.message);
                         $('#cart-status').text('Cart (' + d.cartCount + ')');
-                    };
+                        $('#cartCount').html(d.cartCount)
+                }
+            })
+        })
+    })
+
 </script>
 }

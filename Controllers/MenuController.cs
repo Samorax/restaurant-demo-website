@@ -13,15 +13,15 @@ namespace restaurant_demo_website.Controllers
     {
         private readonly IEntitiesRequest _entitiesRequest;
         private IMemoryCache _memoryCache;
-        private IGetCultureName _getCultureName;
+       
 
         private static IEnumerable<Product> products { get; set; }
 
-        public MenuController(IEntitiesRequest entitiesRequest, IMemoryCache memoryCache, IGetCultureName getCultureName)
+        public MenuController(IEntitiesRequest entitiesRequest, IMemoryCache memoryCache)
         {
             _entitiesRequest = entitiesRequest;
             _memoryCache = memoryCache;
-            _getCultureName = getCultureName;
+            
         }
 
         
@@ -32,12 +32,18 @@ namespace restaurant_demo_website.Controllers
         public async Task<IActionResult> IndexAsync()
         {
             ApplicationUser restaurantinfo = await GetCache();
+            bool opened = false;
             ViewData["RestaurantName"] = restaurantinfo.BusinessName;
-            products = await _entitiesRequest.GetProductsAsync();
+            var pr = await _entitiesRequest.GetProductsAsync();
+            products = pr.Where(p=>p.IsDeleted == false);
 
             var dayopentimes = restaurantinfo.OpeningTimes.FirstOrDefault(o => o.Day == DateTime.Now.DayOfWeek.ToString());
-            var opened = AffirmOnlineShopping(dayopentimes.StartTime, dayopentimes.EndTime);
-            var cultureName = _getCultureName.GetName(restaurantinfo.Country);
+            if (dayopentimes != null)
+            {
+                opened = AffirmOnlineShopping(dayopentimes.StartTime, dayopentimes.EndTime);
+            }
+            
+           
 
             List<string> categories = new List<string>();
 
@@ -45,8 +51,10 @@ namespace restaurant_demo_website.Controllers
             {
                 foreach (var p in products)
                 {
-                    p.imgUrl = GetImagesFromByteArray(p.photosUrl);
-                    categories.Add(p.Category);
+                    
+                        p.imgUrl = GetImagesFromByteArray(p.photosUrl);
+                        categories.Add(p.Category);
+
                 }
                 categories = categories.Distinct().ToList();
             }
@@ -56,8 +64,7 @@ namespace restaurant_demo_website.Controllers
                 Products = products,
                 Categories = categories,
                 CurrentCategory = "All",
-                ShopOpened = opened,
-                CultureName = cultureName
+                ShopOpened = opened
             };
 
             ViewData["Currency"] = restaurantinfo.Currency;
@@ -101,8 +108,8 @@ namespace restaurant_demo_website.Controllers
         /// <returns></returns>
         public async Task<IActionResult> DetailsAsync(int id)
         {
-            products = await _entitiesRequest.GetProductsAsync();
-            Product product = products.FirstOrDefault(p => p.ProductID == id);
+            var pr = await _entitiesRequest.GetProductsAsync();
+            Product product = pr.FirstOrDefault(p => p.ProductID == id);
             product.imgUrl = GetImagesFromByteArray(product.photosUrl);
             if (!string.IsNullOrEmpty(product.Allergens))
             {
@@ -121,8 +128,8 @@ namespace restaurant_demo_website.Controllers
         private bool AffirmOnlineShopping(string starttime, string endtime)
         {
             var nowTime = DateTime.Now.TimeOfDay;
-            var start = DateTime.ParseExact(starttime, "hh:mm tt", CultureInfo.InvariantCulture);
-            var end = DateTime.ParseExact(endtime, "h:mm tt", CultureInfo.InvariantCulture);
+            var start = DateTime.ParseExact(starttime, "hh:mm", CultureInfo.InvariantCulture);
+            var end = DateTime.ParseExact(endtime, "HH:mm", CultureInfo.InvariantCulture);
 
             //if current time is greater than start time, returns 1
             //if current time is less than end time, returns -1
@@ -152,13 +159,13 @@ namespace restaurant_demo_website.Controllers
         /// <returns>Products for a Category</returns>
         public async Task<IActionResult> Category(string categoryName)
         {
-            products = await _entitiesRequest.GetProductsAsync();
+            var pr = await _entitiesRequest.GetProductsAsync();
             List<string> categories = new List<string>();
-            var CategoryProducts = products.Where(p => p.Category.Equals(categoryName)).ToList();
+            var CategoryProducts = pr.Where(p => p.Category.Equals(categoryName)&& p.IsDeleted == false).ToList();
             if (CategoryProducts.Any())
             {
                 
-                foreach (var p in products)
+                foreach (var p in CategoryProducts)
                 {
                     p.imgUrl = GetImagesFromByteArray(p.photosUrl);
                     
