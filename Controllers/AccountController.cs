@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using FoodloyaleApi.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,9 @@ namespace restaurant_demo_website.Controllers
 
         public async Task<IActionResult> Index()
         {
+            ApplicationUser restaurantinfo = await GetCache();
+            bool opened = false;
+            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
             var customerId = User.Claims.Single(c => c.Type == "UserId").Value;
             Customer customer = await _entitiesRequest.GetCustomerAsync(customerId);
             _memoryCache.Set(customerId, customer);
@@ -55,6 +59,26 @@ namespace restaurant_demo_website.Controllers
              await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
             
+        }
+
+        private async Task<ApplicationUser> GetCache()
+        {
+            ApplicationUser restaurantinfo = new ApplicationUser();
+            if (ShoppingCart.CartSessionKey != null)
+            {
+                if (!_memoryCache.TryGetValue(ShoppingCart.CartSessionKey, out ApplicationUser u))
+                {
+                    restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
+                    _memoryCache.Set(ShoppingCart.CartSessionKey, restaurantinfo);
+                }
+                else
+                {
+                    restaurantinfo = u;
+                }
+
+            }
+
+            return restaurantinfo;
         }
     }
 }

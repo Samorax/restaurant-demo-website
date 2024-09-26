@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Hosting.Server;
+﻿using FoodloyaleApi.Models;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using restaurant_demo_website.Models;
 using restaurant_demo_website.Services;
 using restaurant_demo_website.ViewModels;
@@ -12,11 +14,13 @@ namespace restaurant_demo_website.Controllers
     {
         private IEntitiesRequest _entitiesRequest;
         private ShoppingCart _shoppingCart;
+        private IMemoryCache _memoryCache;
 
-        public ShoppingCartController(IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart) 
+        public ShoppingCartController(IEntitiesRequest entitiesRequest, ShoppingCart shoppingCart, IMemoryCache memoryCache) 
         {
             _entitiesRequest = entitiesRequest;
             _shoppingCart = shoppingCart;
+            _memoryCache = memoryCache;
         }
         
         //
@@ -24,6 +28,10 @@ namespace restaurant_demo_website.Controllers
         public async Task<ActionResult> IndexAsync()
         {
             //var cart = ShoppingCart.GetCart(HttpContext);
+
+            ApplicationUser restaurantinfo = await GetCache();
+            bool opened = false;
+            ViewData["RestaurantName"] = restaurantinfo.BusinessName;
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
@@ -95,5 +103,27 @@ namespace restaurant_demo_website.Controllers
             ViewData["CartCount"] = _shoppingCart.GetCountAsync();
             return PartialView("CartSummary");
         }
+
+        private async Task<ApplicationUser> GetCache()
+        {
+            ApplicationUser restaurantinfo = new ApplicationUser();
+            if (ShoppingCart.CartSessionKey != null)
+            {
+                if (!_memoryCache.TryGetValue(ShoppingCart.CartSessionKey, out ApplicationUser u))
+                {
+                    restaurantinfo = await _entitiesRequest.GetRestaurantInfo();
+                    _memoryCache.Set(ShoppingCart.CartSessionKey, restaurantinfo);
+                }
+                else
+                {
+                    restaurantinfo = u;
+                }
+
+            }
+
+            return restaurantinfo;
+        }
+
+
     }
 }

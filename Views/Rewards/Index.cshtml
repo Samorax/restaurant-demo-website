@@ -7,14 +7,27 @@
 }
 @if(Model.Any())
 {
-    @foreach (Rewards m in Model)
-    {
-
-        <li>@m.Title.</li>
-        
-        <a data-ajax="true" data-ajax-url="/rewards/claimreward/@m.RewardsId" data-ajax-update="#claimMessage" class="btn btn-primary">Claim</a>
-        <p id="claimMessage"></p>
-    }
+    <div class="row">
+        @foreach (Rewards m in Model)
+        {
+            <div class="col">
+            <ul style="list-style-type:none">
+                    <li>
+                        <h6>@m.Title</h6>
+                        <div>
+                            <img src="@m.photoUrl" alt="reward_img" />
+                        </div>
+                        <p>@m.Description</p>
+                        <a data-ajax="true" data-ajax-url="/rewards/claimreward/@m.RewardsId" data-ajax-update="#claimMessage" class="btn btn-primary">Claim</a>
+                        <p id="claimMessage"></p>
+                    </li>
+                    </ul>
+                   
+            </div>
+           
+        }
+    </div>
+    
 
 }
 else

@@ -11,6 +11,7 @@ namespace restaurant_demo_website.Models
         public DateTime ExpiryDate {get;set;}
         public int Units {get;set;}
         public Guid CustomerId {get;set;}
+        public string photoUrl {get;set;}
     }
 
      public class RewardDto
